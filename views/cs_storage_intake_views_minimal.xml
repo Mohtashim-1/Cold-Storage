@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Minimal Storage Intake Tree View -->
+        <record id="view_cs_storage_intake_tree_minimal" model="ir.ui.view">
+            <field name="name">cs.storage.intake.tree.minimal</field>
+            <field name="model">cs.storage.intake</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="date_in"/>
+                    <field name="state"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Minimal Storage Intake Form View -->
+        <record id="view_cs_storage_intake_form_minimal" model="ir.ui.view">
+            <field name="name">cs.storage.intake.form.minimal</field>
+            <field name="model">cs.storage.intake</field>
+            <field name="arch" type="xml">
+                <form>
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="date_in"/>
+                            <field name="state"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Minimal Action -->
+        <record id="action_cs_storage_intake_minimal" model="ir.actions.act_window">
+            <field name="name">Storage Intakes (Minimal)</field>
+            <field name="res_model">cs.storage.intake</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        
+    </data>
+</odoo>

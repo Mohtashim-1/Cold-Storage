@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Bulk Release Wizard Form View -->
+        <record id="view_cs_bulk_release_wizard_form" model="ir.ui.view">
+            <field name="name">cs.bulk.release.wizard.form</field>
+            <field name="model">cs.bulk.release.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Bulk Release">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="intake_id" options="{'no_create': True}"/>
+                                <field name="partner_id" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="date_out"/>
+                            </group>
+                        </group>
+                        <field name="line_ids">
+                            <tree editable="bottom">
+                                <field name="intake_line_id" options="{'no_create': True}"/>
+                                <field name="product_id" readonly="1"/>
+                                <field name="lot_id" readonly="1"/>
+                                <field name="qty_available" readonly="1"/>
+                                <field name="qty_out"/>
+                            </tree>
+                        </field>
+                    </sheet>
+                    <footer>
+                        <button name="action_create_release" type="object" string="Create Release" class="oe_highlight"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Bulk Release Wizard Action -->
+        <record id="action_cs_bulk_release_wizard" model="ir.actions.act_window">
+            <field name="name">Bulk Release</field>
+            <field name="res_model">cs.bulk.release.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        
+        <!-- Monthly Billing Wizard Form View -->
+        <record id="view_cs_monthly_billing_wizard_form" model="ir.ui.view">
+            <field name="name">cs.monthly.billing.wizard.form</field>
+            <field name="model">cs.monthly.billing.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Monthly Billing">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                            </group>
+                            <group>
+                                <field name="partner_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                <field name="contract_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            </group>
+                        </group>
+                        <group>
+                            <field name="create_invoices"/>
+                        </group>
+                        <group invisible="not create_invoices">
+                            <group>
+                                <field name="invoice_count" readonly="1"/>
+                                <field name="total_amount" widget="monetary" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name="action_preview_billing" type="object" string="Preview" class="btn-secondary"/>
+                        <button name="action_run_billing" type="object" string="Run Billing" class="oe_highlight"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Monthly Billing Wizard Action -->
+        <record id="action_cs_monthly_billing_wizard" model="ir.actions.act_window">
+            <field name="name">Monthly Billing</field>
+            <field name="res_model">cs.monthly.billing.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        
+    </data>
+</odoo>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Storage Intake Tree View -->
+        <record id="view_cs_storage_intake_tree" model="ir.ui.view">
+            <field name="name">cs.storage.intake.tree</field>
+            <field name="model">cs.storage.intake</field>
+            <field name="arch" type="xml">
+                <tree string="Storage Intakes" decoration-info="state == 'draft'" decoration-success="state == 'checked_in'" decoration-warning="state == 'partially_out'" decoration-muted="state in ['closed', 'cancelled']">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="date_in"/>
+                    <field name="planned_date_out"/>
+                    <field name="location_id"/>
+                    <field name="temperature_target"/>
+                    <field name="state" widget="badge" decoration-success="state == 'checked_in'" decoration-warning="state == 'partially_out'" decoration-info="state == 'draft'" decoration-muted="state in ['closed', 'cancelled']"/>
+                    <field name="total_amount" widget="monetary"/>
+                    <field name="currency_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Storage Intake Form View -->
+        <record id="view_cs_storage_intake_form" model="ir.ui.view">
+            <field name="name">cs.storage.intake.form</field>
+            <field name="model">cs.storage.intake</field>
+            <field name="arch" type="xml">
+                <form string="Storage Intake">
+                    <header>
+                        <button name="action_check_in" type="object" string="Check In" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_cancel" type="object" string="Cancel" invisible="state in ['closed', 'cancelled']"/>
+                        <button name="action_close" type="object" string="Close" invisible="state != 'partially_out'"/>
+                        <field name="state" widget="radio" options="{'horizontal': true}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_releases" type="object" class="oe_stat_button" icon="fa-truck">
+                                <field name="release_count" widget="statinfo" string="Releases"/>
+                            </button>
+                            <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o">
+                                <field name="invoice_count" widget="statinfo" string="Invoices"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id"/>
+                                <field name="date_in"/>
+                                <field name="planned_date_out"/>
+                            </group>
+                            <group>
+                                <field name="location_id"/>
+                                <field name="temperature_target"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                        </group>
+                        <field name="note" placeholder="Additional notes..."/>
+                        <notebook>
+                            <page string="Items" name="items">
+                                <field name="line_ids">
+                                    <tree editable="bottom">
+                                        <field name="product_id"/>
+                                        <field name="lot_id" options="{'no_create': True}"/>
+                                        <field name="qty_in"/>
+                                        <field name="qty_uom_id"/>
+                                        <field name="qty_out" readonly="1"/>
+                                        <field name="weight"/>
+                                        <field name="volume"/>
+                                        <field name="pallet_count"/>
+                                        <field name="tariff_rule_id"/>
+                                        <field name="price_unit"/>
+                                        <field name="amount_subtotal" widget="monetary"/>
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="remark"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Temperature Logs" name="temperature_logs">
+                                <field name="temperature_log_ids">
+                                    <tree>
+                                        <field name="timestamp"/>
+                                        <field name="temperature"/>
+                                        <field name="sensor_id"/>
+                                        <field name="temperature_status" widget="badge"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Storage Intake Search View -->
+        <record id="view_cs_storage_intake_search" model="ir.ui.view">
+            <field name="name">cs.storage.intake.search</field>
+            <field name="model">cs.storage.intake</field>
+            <field name="arch" type="xml">
+                <search string="Search Storage Intakes">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="location_id"/>
+                    <field name="date_in"/>
+                    <field name="planned_date_out"/>
+                    <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Checked In" name="checked_in" domain="[('state', '=', 'checked_in')]"/>
+                    <filter string="Partially Out" name="partially_out" domain="[('state', '=', 'partially_out')]"/>
+                    <filter string="Closed" name="closed" domain="[('state', '=', 'closed')]"/>
+                    <filter string="Cancelled" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                    <filter string="Overdue" name="overdue" domain="[('planned_date_out', '&lt;', context_today()), ('state', 'in', ['checked_in', 'partially_out'])]"/>
+                    <separator/>
+                    <filter string="Today" name="today" domain="[('date_in', '=', context_today())]"/>
+                    <filter string="This Week" name="this_week" domain="[('date_in', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday()))), ('date_in', '&lt;=', (context_today() + datetime.timedelta(days=6-context_today().weekday())))]"/>
+                    <filter string="This Month" name="this_month" domain="[('date_in', '&gt;=', datetime.datetime.now().strftime('%Y-%m-01'))]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Customer" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                        <filter string="Location" name="group_location" context="{'group_by': 'location_id'}"/>
+                        <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                        <filter string="Date In" name="group_date_in" context="{'group_by': 'date_in:day'}"/>
+                        <filter string="Company" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        
+        <!-- Storage Intake Action -->
+        <record id="action_cs_storage_intake" model="ir.actions.act_window">
+            <field name="name">Storage Intakes</field>
+            <field name="res_model">cs.storage.intake</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_cs_storage_intake_search"/>
+            <field name="context">{'search_default_draft': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first storage intake!
+                </p>
+                <p>
+                    Storage intakes track goods received for cold storage,
+                    including check-in time, location, and billing details.
+                </p>
+            </field>
+        </record>
+        
+        
+    </data>
+</odoo>

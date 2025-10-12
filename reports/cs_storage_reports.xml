@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Storage Intake Report -->
+        <record id="action_report_cs_storage_intake" model="ir.actions.report">
+            <field name="name">Storage Intake Report</field>
+            <field name="model">cs.storage.intake</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">cs_cold_storage.report_cs_storage_intake</field>
+            <field name="report_file">cs_cold_storage.report_cs_storage_intake</field>
+            <field name="binding_model_id" ref="model_cs_storage_intake"/>
+            <field name="binding_type">report</field>
+        </record>
+        
+        <!-- Storage Release Report -->
+        <record id="action_report_cs_stock_release" model="ir.actions.report">
+            <field name="name">Storage Release Report</field>
+            <field name="model">cs.stock.release</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">cs_cold_storage.report_cs_stock_release</field>
+            <field name="report_file">cs_cold_storage.report_cs_stock_release</field>
+            <field name="binding_model_id" ref="model_cs_stock_release"/>
+            <field name="binding_type">report</field>
+        </record>
+        
+        <!-- Aging Report Action -->
+        <record id="action_report_cs_aging" model="ir.actions.act_window">
+            <field name="name">Aging in Storage</field>
+            <field name="res_model">cs.storage.intake.line</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('intake_id.state', 'in', ['checked_in', 'partially_out'])]</field>
+            <field name="context">{'group_by': ['duration_days:day']}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No aging items found!
+                </p>
+                <p>
+                    This report shows items currently in storage
+                    grouped by duration to identify aging inventory.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Revenue Report Action -->
+        <record id="action_report_cs_revenue" model="ir.actions.act_window">
+            <field name="name">Revenue by Customer</field>
+            <field name="res_model">cs.storage.intake.line</field>
+            <field name="view_mode">tree,form,graph,pivot</field>
+            <field name="domain">[('amount_subtotal', '>', 0)]</field>
+            <field name="context">{'group_by': ['intake_id.partner_id', 'date_in:month']}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No revenue data found!
+                </p>
+                <p>
+                    This report shows storage revenue by customer
+                    and month for financial analysis.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Utilization Report Action -->
+        <record id="action_report_cs_utilization" model="ir.actions.act_window">
+            <field name="name">Freezer Utilization</field>
+            <field name="res_model">stock.location</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('is_freezer', '=', True)]</field>
+            <field name="context">{'group_by': ['company_id']}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No freezer locations found!
+                </p>
+                <p>
+                    This report shows freezer utilization rates
+                    to help with capacity planning.
+                </p>
+            </field>
+        </record>
+        
+    </data>
+</odoo>

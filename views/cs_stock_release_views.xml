@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Stock Release Tree View -->
+        <record id="view_cs_stock_release_tree" model="ir.ui.view">
+            <field name="name">cs.stock.release.tree</field>
+            <field name="model">cs.stock.release</field>
+            <field name="arch" type="xml">
+                <tree string="Storage Releases" decoration-info="state == 'draft'" decoration-success="state == 'done'" decoration-muted="state == 'cancelled'">
+                    <field name="name"/>
+                    <field name="intake_id"/>
+                    <field name="partner_id"/>
+                    <field name="date_out"/>
+                    <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'draft'" decoration-muted="state == 'cancelled'"/>
+                    <field name="total_qty_out"/>
+                    <field name="total_amount" widget="monetary"/>
+                    <field name="currency_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Stock Release Form View -->
+        <record id="view_cs_stock_release_form" model="ir.ui.view">
+            <field name="name">cs.stock.release.form</field>
+            <field name="model">cs.stock.release</field>
+            <field name="arch" type="xml">
+                <form string="Storage Release">
+                    <header>
+                        <button name="action_validate" type="object" string="Validate" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_cancel" type="object" string="Cancel" invisible="state != 'draft'"/>
+                        <button name="action_create_invoice" type="object" string="Create Invoice" invisible="state != 'done'"/>
+                        <field name="state" widget="radio" options="{'horizontal': true}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="intake_id" options="{'no_create': True}"/>
+                                <field name="partner_id" readonly="1"/>
+                                <field name="date_out"/>
+                            </group>
+                            <group>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="total_qty_out" readonly="1"/>
+                                <field name="total_amount" widget="monetary" readonly="1"/>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Release Lines" name="lines">
+                                <field name="line_ids">
+                                    <tree editable="bottom">
+                                        <field name="intake_line_id" options="{'no_create': True}"/>
+                                        <field name="product_id" readonly="1"/>
+                                        <field name="lot_id" readonly="1"/>
+                                        <field name="qty_available" readonly="1"/>
+                                        <field name="qty_released" readonly="1"/>
+                                        <field name="qty_out"/>
+                                        <field name="amount_line" widget="monetary" readonly="1"/>
+                                        <field name="currency_id" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Stock Moves" name="moves">
+                                <field name="move_ids">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="product_id"/>
+                                        <field name="product_uom_qty"/>
+                                        <field name="location_id"/>
+                                        <field name="location_dest_id"/>
+                                        <field name="state"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Stock Release Search View -->
+        <record id="view_cs_stock_release_search" model="ir.ui.view">
+            <field name="name">cs.stock.release.search</field>
+            <field name="model">cs.stock.release</field>
+            <field name="arch" type="xml">
+                <search string="Search Storage Releases">
+                    <field name="name"/>
+                    <field name="intake_id"/>
+                    <field name="partner_id"/>
+                    <field name="date_out"/>
+                    <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                    <filter string="Cancelled" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                    <separator/>
+                    <filter string="Today" name="today" domain="[('date_out', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('date_out', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
+                    <filter string="This Week" name="this_week" domain="[('date_out', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday())).strftime('%Y-%m-%d')), ('date_out', '&lt;=', (context_today() + datetime.timedelta(days=6-context_today().weekday())).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Intake" name="group_intake" context="{'group_by': 'intake_id'}"/>
+                        <filter string="Customer" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                        <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                        <filter string="Date Out" name="group_date_out" context="{'group_by': 'date_out:day'}"/>
+                        <filter string="Company" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        
+        <!-- Stock Release Action -->
+        <record id="action_cs_stock_release" model="ir.actions.act_window">
+            <field name="name">Storage Releases</field>
+            <field name="res_model">cs.stock.release</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_cs_stock_release_search"/>
+            <field name="context">{'search_default_draft': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first storage release!
+                </p>
+                <p>
+                    Storage releases track goods leaving cold storage,
+                    including release time and billing calculations.
+                </p>
+            </field>
+        </record>
+        
+    </data>
+</odoo>

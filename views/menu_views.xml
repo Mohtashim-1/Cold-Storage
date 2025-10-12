@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Main Menu -->
+        <menuitem id="menu_cs_cold_storage_root"
+                  name="Cold Storage"
+                  sequence="50"
+                  web_icon="cs_cold_storage,static/description/icon.png"/>
+        
+        <!-- Intakes Menu -->
+        <menuitem id="menu_cs_storage_intake"
+                  name="Intakes"
+                  parent="menu_cs_cold_storage_root"
+                  action="action_cs_storage_intake"
+                  sequence="10"
+                  groups="cs_cold_storage.group_cs_user"/>
+        
+        <!-- Releases Menu -->
+        <menuitem id="menu_cs_stock_release"
+                  name="Releases"
+                  parent="menu_cs_cold_storage_root"
+                  action="action_cs_stock_release"
+                  sequence="20"
+                  groups="cs_cold_storage.group_cs_user"/>
+        
+        <!-- Configuration Menu -->
+        <menuitem id="menu_cs_configuration"
+                  name="Configuration"
+                  parent="menu_cs_cold_storage_root"
+                  sequence="90"
+                  groups="cs_cold_storage.group_cs_manager"/>
+        
+        <!-- Tariff Rules Menu -->
+        <menuitem id="menu_cs_tariff_rule"
+                  name="Tariff Rules"
+                  parent="menu_cs_configuration"
+                  action="action_cs_tariff_rule"
+                  sequence="10"
+                  groups="cs_cold_storage.group_cs_manager"/>
+        
+        <!-- Contracts Menu -->
+        <menuitem id="menu_cs_storage_contract"
+                  name="Contracts"
+                  parent="menu_cs_cold_storage_root"
+                  action="action_cs_storage_contract"
+                  sequence="30"
+                  groups="cs_cold_storage.group_cs_user"/>
+        
+        <!-- Temperature Logs Menu -->
+        <menuitem id="menu_cs_temperature_log"
+                  name="Temperature Logs"
+                  parent="menu_cs_cold_storage_root"
+                  action="action_cs_temperature_log"
+                  sequence="40"
+                  groups="cs_cold_storage.group_cs_user"/>
+        
+        <!-- Reports Menu -->
+        <menuitem id="menu_cs_reports"
+                  name="Reports"
+                  parent="menu_cs_cold_storage_root"
+                  sequence="80"
+                  groups="cs_cold_storage.group_cs_user"/>
+        
+        <!-- Billing Menu -->
+        <menuitem id="menu_cs_billing"
+                  name="Billing"
+                  parent="menu_cs_cold_storage_root"
+                  sequence="70"
+                  groups="cs_cold_storage.group_cs_manager"/>
+        
+        <!-- Monthly Billing Menu -->
+        <menuitem id="menu_cs_monthly_billing"
+                  name="Monthly Billing"
+                  parent="menu_cs_billing"
+                  action="action_cs_monthly_billing_wizard"
+                  sequence="10"
+                  groups="cs_cold_storage.group_cs_manager"/>
+        
+    </data>
+</odoo>

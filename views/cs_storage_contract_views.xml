@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Storage Contract Tree View -->
+        <record id="view_cs_storage_contract_tree" model="ir.ui.view">
+            <field name="name">cs.storage.contract.tree</field>
+            <field name="model">cs.storage.contract</field>
+            <field name="arch" type="xml">
+                <tree string="Storage Contracts" decoration-info="state == 'draft'" decoration-success="state == 'active'" decoration-warning="state == 'suspended'" decoration-muted="state == 'closed'">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="pricing_model"/>
+                    <field name="date_start"/>
+                    <field name="date_end"/>
+                    <field name="state" widget="badge" decoration-success="state == 'active'" decoration-warning="state == 'suspended'" decoration-info="state == 'draft'" decoration-muted="state == 'closed'"/>
+                    <field name="total_storage_amount" widget="monetary"/>
+                    <field name="currency_id" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Storage Contract Form View -->
+        <record id="view_cs_storage_contract_form" model="ir.ui.view">
+            <field name="name">cs.storage.contract.form</field>
+            <field name="model">cs.storage.contract</field>
+            <field name="arch" type="xml">
+                <form string="Storage Contract">
+                    <header>
+                        <button name="action_activate" type="object" string="Activate" class="oe_highlight" invisible="state != 'draft'"/>
+                        <button name="action_suspend" type="object" string="Suspend" invisible="state != 'active'"/>
+                        <button name="action_close" type="object" string="Close" invisible="state not in ['active', 'suspended']"/>
+                        <button name="action_create_invoice" type="object" string="Create Invoice" invisible="state != 'active'"/>
+                        <field name="state" widget="radio" options="{'horizontal': true}"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_intakes" type="object" class="oe_stat_button" icon="fa-truck">
+                                <field name="intake_count" widget="statinfo" string="Intakes"/>
+                            </button>
+                            <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o">
+                                <field name="invoice_count" widget="statinfo" string="Invoices"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="partner_id"/>
+                                <field name="pricing_model" widget="radio"/>
+                                <field name="tariff_rule_id"/>
+                                <field name="credit_limit"/>
+                            </group>
+                            <group>
+                                <field name="date_start"/>
+                                <field name="date_end"/>
+                                <field name="invoice_cycle" widget="radio"/>
+                                <field name="next_invoice_date"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="total_storage_amount" widget="monetary" readonly="1"/>
+                                <field name="total_invoiced" widget="monetary" readonly="1"/>
+                                <field name="balance_due" widget="monetary" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="currency_id" invisible="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Intakes" name="intakes">
+                                <field name="intake_ids">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="date_in"/>
+                                        <field name="location_id"/>
+                                        <field name="state"/>
+                                        <field name="total_amount" widget="monetary"/>
+                                        <field name="currency_id" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Invoices" name="invoices">
+                                <field name="invoice_ids">
+                                    <tree>
+                                        <field name="name"/>
+                                        <field name="invoice_date"/>
+                                        <field name="amount_total" widget="monetary"/>
+                                        <field name="state"/>
+                                        <field name="currency_id" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Storage Contract Search View -->
+        <record id="view_cs_storage_contract_search" model="ir.ui.view">
+            <field name="name">cs.storage.contract.search</field>
+            <field name="model">cs.storage.contract</field>
+            <field name="arch" type="xml">
+                <search string="Search Storage Contracts">
+                    <field name="name"/>
+                    <field name="partner_id"/>
+                    <field name="pricing_model"/>
+                    <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Active" name="active" domain="[('state', '=', 'active')]"/>
+                    <filter string="Suspended" name="suspended" domain="[('state', '=', 'suspended')]"/>
+                    <filter string="Closed" name="closed" domain="[('state', '=', 'closed')]"/>
+                    <separator/>
+                    <filter string="Expiring Soon" name="expiring" domain="[('date_end', '&lt;=', (context_today() + datetime.timedelta(days=30)).strftime('%Y-%m-%d')), ('date_end', '!=', False), ('state', '=', 'active')]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Customer" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                        <filter string="Pricing Model" name="group_pricing" context="{'group_by': 'pricing_model'}"/>
+                        <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                        <filter string="Company" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        
+        <!-- Storage Contract Action -->
+        <record id="action_cs_storage_contract" model="ir.actions.act_window">
+            <field name="name">Storage Contracts</field>
+            <field name="res_model">cs.storage.contract</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_cs_storage_contract_search"/>
+            <field name="context">{'search_default_active': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create your first storage contract!
+                </p>
+                <p>
+                    Storage contracts define billing terms and conditions
+                    for recurring cold storage customers.
+                </p>
+            </field>
+        </record>
+        
+    </data>
+</odoo>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Temperature Log Tree View -->
+        <record id="view_cs_temperature_log_tree" model="ir.ui.view">
+            <field name="name">cs.temperature.log.tree</field>
+            <field name="model">cs.temperature.log</field>
+            <field name="arch" type="xml">
+                <tree string="Temperature Logs" decoration-success="temperature_status == 'normal'" decoration-warning="temperature_status in ['high', 'low']" decoration-danger="temperature_status == 'critical'">
+                    <field name="timestamp"/>
+                    <field name="location_id"/>
+                    <field name="intake_id"/>
+                    <field name="temperature"/>
+                    <field name="temperature_status" widget="badge" decoration-success="temperature_status == 'normal'" decoration-warning="temperature_status in ['high', 'low']" decoration-danger="temperature_status == 'critical'"/>
+                    <field name="sensor_id"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Temperature Log Form View -->
+        <record id="view_cs_temperature_log_form" model="ir.ui.view">
+            <field name="name">cs.temperature.log.form</field>
+            <field name="model">cs.temperature.log</field>
+            <field name="arch" type="xml">
+                <form string="Temperature Log">
+                    <header>
+                        <button name="action_view_intake" type="object" string="View Intake" invisible="not intake_id"/>
+                        <button name="action_view_location" type="object" string="View Location"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_title">
+                            <h1>
+                                <field name="display_name" readonly="1"/>
+                            </h1>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="location_id" options="{'no_create': True}"/>
+                                <field name="intake_id" options="{'no_create': True}"/>
+                                <field name="timestamp"/>
+                            </group>
+                            <group>
+                                <field name="temperature"/>
+                                <field name="temperature_status" widget="badge"/>
+                                <field name="sensor_id"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Temperature Log Search View -->
+        <record id="view_cs_temperature_log_search" model="ir.ui.view">
+            <field name="name">cs.temperature.log.search</field>
+            <field name="model">cs.temperature.log</field>
+            <field name="arch" type="xml">
+                <search string="Search Temperature Logs">
+                    <field name="location_id"/>
+                    <field name="intake_id"/>
+                    <field name="sensor_id"/>
+                    <field name="temperature"/>
+                    <filter string="Normal" name="normal" domain="[('temperature_status', '=', 'normal')]"/>
+                    <filter string="High" name="high" domain="[('temperature_status', '=', 'high')]"/>
+                    <filter string="Low" name="low" domain="[('temperature_status', '=', 'low')]"/>
+                    <filter string="Critical" name="critical" domain="[('temperature_status', '=', 'critical')]"/>
+                    <separator/>
+                    <filter string="Today" name="today" domain="[('timestamp', '&gt;=', datetime.datetime.combine(context_today(), datetime.time(0,0,0))), ('timestamp', '&lt;=', datetime.datetime.combine(context_today(), datetime.time(23,59,59)))]"/>
+                    <filter string="This Week" name="this_week" domain="[('timestamp', '&gt;=', (context_today() - datetime.timedelta(days=context_today().weekday()))), ('timestamp', '&lt;=', (context_today() + datetime.timedelta(days=6-context_today().weekday())))]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Location" name="group_location" context="{'group_by': 'location_id'}"/>
+                        <filter string="Intake" name="group_intake" context="{'group_by': 'intake_id'}"/>
+                        <filter string="Status" name="group_status" context="{'group_by': 'temperature_status'}"/>
+                        <filter string="Date" name="group_date" context="{'group_by': 'timestamp:day'}"/>
+                        <filter string="Company" name="group_company" context="{'group_by': 'company_id'}" groups="base.group_multi_company"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        
+        <!-- Temperature Log Action -->
+        <record id="action_cs_temperature_log" model="ir.actions.act_window">
+            <field name="name">Temperature Logs</field>
+            <field name="res_model">cs.temperature.log</field>
+            <field name="view_mode">tree,form,graph</field>
+            <field name="search_view_id" ref="view_cs_temperature_log_search"/>
+            <field name="context">{'search_default_today': 1}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No temperature logs found!
+                </p>
+                <p>
+                    Temperature logs track freezer conditions over time
+                    to ensure proper storage conditions are maintained.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Temperature Log Graph View -->
+        <record id="view_cs_temperature_log_graph" model="ir.ui.view">
+            <field name="name">cs.temperature.log.graph</field>
+            <field name="model">cs.temperature.log</field>
+            <field name="arch" type="xml">
+                <graph string="Temperature Trends" type="line">
+                    <field name="timestamp" type="row"/>
+                    <field name="temperature" type="measure"/>
+                </graph>
+            </field>
+        </record>
+        
+    </data>
+</odoo>

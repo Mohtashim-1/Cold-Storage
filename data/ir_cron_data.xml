@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Daily job to refresh durations for open intakes -->
+        <record id="ir_cron_refresh_durations" model="ir.cron">
+            <field name="name">Cold Storage: Refresh Open Durations</field>
+            <field name="model_id" ref="model_cs_storage_intake"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_refresh_durations()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="doall">False</field>
+        </record>
+        
+        <!-- Daily job to check for overdue planned releases -->
+        <record id="ir_cron_check_overdue" model="ir.cron">
+            <field name="name">Cold Storage: Check Overdue Releases</field>
+            <field name="model_id" ref="model_cs_storage_intake"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_check_overdue_releases()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="doall">False</field>
+        </record>
+        
+        <!-- Monthly billing job -->
+        <record id="ir_cron_monthly_billing" model="ir.cron">
+            <field name="name">Cold Storage: Monthly Billing</field>
+            <field name="model_id" ref="model_cs_storage_contract"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_monthly_billing()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">months</field>
+            <field name="numbercall">-1</field>
+            <field name="active">True</field>
+            <field name="doall">False</field>
+        </record>
+        
+    </data>
+</odoo>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        
+        <!-- Demo Freezer Locations -->
+        <record id="demo_freezer_1" model="stock.location">
+            <field name="name">Freezer A1</field>
+            <field name="location_id" ref="stock.stock_location_stock"/>
+            <field name="usage">internal</field>
+            <field name="is_freezer">True</field>
+            <field name="temperature_range_min">-25</field>
+            <field name="temperature_range_max">-15</field>
+            <field name="max_volume">100</field>
+            <field name="max_weight">5000</field>
+        </record>
+        
+        <record id="demo_freezer_2" model="stock.location">
+            <field name="name">Freezer B1</field>
+            <field name="location_id" ref="stock.stock_location_stock"/>
+            <field name="usage">internal</field>
+            <field name="is_freezer">True</field>
+            <field name="temperature_range_min">-20</field>
+            <field name="temperature_range_max">-10</field>
+            <field name="max_volume">150</field>
+            <field name="max_weight">7500</field>
+        </record>
+        
+        <!-- Demo Tariff Rules -->
+        <record id="demo_tariff_frozen_kg" model="cs.tariff.rule">
+            <field name="name">Frozen Goods per Kg/Day</field>
+            <field name="basis">day_weight</field>
+            <field name="price_unit">2.50</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="price_product_id" ref="cs_cold_storage.product_cold_storage_service"/>
+            <field name="rounding_policy">ceil_day</field>
+            <field name="min_bill_days">1.0</field>
+            <field name="min_temp">-30</field>
+            <field name="max_temp">-10</field>
+        </record>
+        
+        <record id="demo_tariff_chilled_volume" model="cs.tariff.rule">
+            <field name="name">Chilled Goods per Volume/Day</field>
+            <field name="basis">day_volume</field>
+            <field name="price_unit">15.00</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="price_product_id" ref="cs_cold_storage.product_cold_storage_service"/>
+            <field name="rounding_policy">half_up</field>
+            <field name="min_bill_days">1.0</field>
+            <field name="min_temp">0</field>
+            <field name="max_temp">5</field>
+        </record>
+        
+        <record id="demo_tariff_flat" model="cs.tariff.rule">
+            <field name="name">Flat Rate per Day</field>
+            <field name="basis">flat</field>
+            <field name="price_unit">50.00</field>
+            <field name="currency_id" ref="base.USD"/>
+            <field name="price_product_id" ref="cs_cold_storage.product_cold_storage_service"/>
+            <field name="rounding_policy">exact_hours</field>
+            <field name="min_bill_days">0.5</field>
+        </record>
+        
+        <!-- Demo Storage Contract -->
+        <record id="demo_contract_1" model="cs.storage.contract">
+            <field name="name">CON/2024/00001</field>
+            <field name="partner_id" ref="base.res_partner_1"/>
+            <field name="pricing_model">post_paid</field>
+            <field name="tariff_rule_id" ref="demo_tariff_frozen_kg"/>
+            <field name="invoice_cycle">monthly</field>
+            <field name="date_start" eval="(datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d')"/>
+            <field name="state">active</field>
+        </record>
+        
+    </data>
+</odoo>

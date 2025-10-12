@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Stock Location Form View Extension -->
+        <record id="view_stock_location_form_cs" model="ir.ui.view">
+            <field name="name">stock.location.form.cs</field>
+            <field name="model">stock.location</field>
+            <field name="inherit_id" ref="stock.view_location_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='usage']" position="after">
+                    <field name="is_freezer"/>
+                    <field name="temperature_range_min" invisible="not is_freezer"/>
+                    <field name="temperature_range_max" invisible="not is_freezer"/>
+                    <field name="max_volume" invisible="not is_freezer"/>
+                    <field name="max_weight" invisible="not is_freezer"/>
+                    <field name="current_volume" readonly="1" invisible="not is_freezer"/>
+                    <field name="volume_utilization" readonly="1" invisible="not is_freezer"/>
+                    <field name="current_weight" readonly="1" invisible="not is_freezer"/>
+                    <field name="weight_utilization" readonly="1" invisible="not is_freezer"/>
+                </xpath>
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_intakes" type="object" class="oe_stat_button" icon="fa-truck" invisible="not is_freezer">
+                        <field name="intake_count" widget="statinfo" string="Intakes"/>
+                    </button>
+                    <button name="action_view_temperature_logs" type="object" class="oe_stat_button" icon="fa-thermometer-half" invisible="not is_freezer">
+                        <field name="temperature_log_count" widget="statinfo" string="Temp Logs"/>
+                    </button>
+                </xpath>
+            </field>
+        </record>
+        
+        <!-- Stock Location Tree View Extension -->
+        <record id="view_stock_location_tree_cs" model="ir.ui.view">
+            <field name="name">stock.location.tree.cs</field>
+            <field name="model">stock.location</field>
+            <field name="inherit_id" ref="stock.view_location_tree2"/>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='usage']" position="after">
+                    <field name="is_freezer" optional="hide"/>
+                    <field name="temperature_range_min" optional="hide"/>
+                    <field name="temperature_range_max" optional="hide"/>
+                    <field name="volume_utilization" optional="hide"/>
+                    <field name="weight_utilization" optional="hide"/>
+                </xpath>
+            </field>
+        </record>
+        
+    </data>
+</odoo>

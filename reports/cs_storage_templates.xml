@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Storage Intake Report Template -->
+        <template id="report_cs_storage_intake">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="oe_structure"/>
+                            <div class="row">
+                                <div class="col-6">
+                                    <h3>Storage Intake: <span t-field="doc.name"/></h3>
+                                    <p><strong>Customer:</strong> <span t-field="doc.partner_id"/></p>
+                                    <p><strong>Date In:</strong> <span t-field="doc.date_in"/></p>
+                                    <p><strong>Location:</strong> <span t-field="doc.location_id"/></p>
+                                </div>
+                                <div class="col-6">
+                                    <p><strong>Planned Release:</strong> <span t-field="doc.planned_date_out"/></p>
+                                    <p><strong>Target Temperature:</strong> <span t-field="doc.temperature_target"/>°C</p>
+                                    <p><strong>Status:</strong> <span t-field="doc.state"/></p>
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Lot</th>
+                                                <th>Qty In</th>
+                                                <th>Qty Out</th>
+                                                <th>Weight (kg)</th>
+                                                <th>Volume</th>
+                                                <th>Duration (days)</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="doc.line_ids" t-as="line">
+                                                <tr>
+                                                    <td><span t-field="line.product_id"/></td>
+                                                    <td><span t-field="line.lot_id"/></td>
+                                                    <td><span t-field="line.qty_in"/></td>
+                                                    <td><span t-field="line.qty_out"/></td>
+                                                    <td><span t-field="line.weight"/></td>
+                                                    <td><span t-field="line.volume"/></td>
+                                                    <td><span t-field="line.duration_days"/></td>
+                                                    <td><span t-field="line.amount_subtotal" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="7"><strong>Total</strong></td>
+                                                <td><strong><span t-field="doc.total_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                            <div t-if="doc.note" class="row mt-4">
+                                <div class="col-12">
+                                    <h4>Notes</h4>
+                                    <p t-field="doc.note"/>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+        
+        <!-- Storage Release Report Template -->
+        <template id="report_cs_stock_release">
+            <t t-call="web.html_container">
+                <t t-foreach="docs" t-as="doc">
+                    <t t-call="web.external_layout">
+                        <div class="page">
+                            <div class="oe_structure"/>
+                            <div class="row">
+                                <div class="col-6">
+                                    <h3>Storage Release: <span t-field="doc.name"/></h3>
+                                    <p><strong>Intake:</strong> <span t-field="doc.intake_id"/></p>
+                                    <p><strong>Customer:</strong> <span t-field="doc.partner_id"/></p>
+                                    <p><strong>Date Out:</strong> <span t-field="doc.date_out"/></p>
+                                </div>
+                                <div class="col-6">
+                                    <p><strong>Status:</strong> <span t-field="doc.state"/></p>
+                                    <p><strong>Total Qty Out:</strong> <span t-field="doc.total_qty_out"/></p>
+                                    <p><strong>Total Amount:</strong> <span t-field="doc.total_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></p>
+                                </div>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Lot</th>
+                                                <th>Qty Out</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <t t-foreach="doc.line_ids" t-as="line">
+                                                <tr>
+                                                    <td><span t-field="line.product_id"/></td>
+                                                    <td><span t-field="line.lot_id"/></td>
+                                                    <td><span t-field="line.qty_out"/></td>
+                                                    <td><span t-field="line.amount_line" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></td>
+                                                </tr>
+                                            </t>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="3"><strong>Total</strong></td>
+                                                <td><strong><span t-field="doc.total_amount" t-options="{'widget': 'monetary', 'display_currency': doc.currency_id}"/></strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </t>
+            </t>
+        </template>
+        
+    </data>
+</odoo>
