@@ -8,7 +8,7 @@
             <field name="name">Cold Storage Intake: User Access</field>
             <field name="model_id" ref="model_cs_storage_intake"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('group_cs_user'))]"/>
+            <field name="groups" eval="[(4, ref('cs_cold_storage.group_cs_user'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>
@@ -19,7 +19,7 @@
             <field name="name">Cold Storage Intake: Manager Access</field>
             <field name="model_id" ref="model_cs_storage_intake"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('group_cs_manager'))]"/>
+            <field name="groups" eval="[(4, ref('cs_cold_storage.group_cs_manager'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>
@@ -31,7 +31,7 @@
             <field name="name">Cold Storage Release: User Access</field>
             <field name="model_id" ref="model_cs_stock_release"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('group_cs_user'))]"/>
+            <field name="groups" eval="[(4, ref('cs_cold_storage.group_cs_user'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>
@@ -42,7 +42,7 @@
             <field name="name">Cold Storage Release: Manager Access</field>
             <field name="model_id" ref="model_cs_stock_release"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('group_cs_manager'))]"/>
+            <field name="groups" eval="[(4, ref('cs_cold_storage.group_cs_manager'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>
@@ -54,7 +54,7 @@
             <field name="name">Cold Storage Tariff Rule: User Access</field>
             <field name="model_id" ref="model_cs_tariff_rule"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('group_cs_user'))]"/>
+            <field name="groups" eval="[(4, ref('cs_cold_storage.group_cs_user'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="False"/>
             <field name="perm_create" eval="False"/>
@@ -65,7 +65,7 @@
             <field name="name">Cold Storage Tariff Rule: Manager Access</field>
             <field name="model_id" ref="model_cs_tariff_rule"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('group_cs_manager'))]"/>
+            <field name="groups" eval="[(4, ref('cs_cold_storage.group_cs_manager'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>
@@ -77,7 +77,7 @@
             <field name="name">Cold Storage Temperature Log: User Access</field>
             <field name="model_id" ref="model_cs_temperature_log"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('group_cs_user'))]"/>
+            <field name="groups" eval="[(4, ref('cs_cold_storage.group_cs_user'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>
@@ -88,7 +88,7 @@
             <field name="name">Cold Storage Temperature Log: Manager Access</field>
             <field name="model_id" ref="model_cs_temperature_log"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('group_cs_manager'))]"/>
+            <field name="groups" eval="[(4, ref('cs_cold_storage.group_cs_manager'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>
@@ -100,7 +100,7 @@
             <field name="name">Cold Storage Contract: User Access</field>
             <field name="model_id" ref="model_cs_storage_contract"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('group_cs_user'))]"/>
+            <field name="groups" eval="[(4, ref('cs_cold_storage.group_cs_user'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="False"/>
             <field name="perm_create" eval="False"/>
@@ -111,7 +111,7 @@
             <field name="name">Cold Storage Contract: Manager Access</field>
             <field name="model_id" ref="model_cs_storage_contract"/>
             <field name="domain_force">[('company_id', 'in', company_ids)]</field>
-            <field name="groups" eval="[(4, ref('group_cs_manager'))]"/>
+            <field name="groups" eval="[(4, ref('cs_cold_storage.group_cs_manager'))]"/>
             <field name="perm_read" eval="True"/>
             <field name="perm_write" eval="True"/>
             <field name="perm_create" eval="True"/>

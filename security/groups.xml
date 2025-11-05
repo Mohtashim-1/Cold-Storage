@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Cold Storage Groups - loaded first to ensure they exist when CSV references them -->
-    <data noupdate="0">
+    <data>
         <record id="group_cs_user" model="res.groups">
             <field name="name">Cold Storage User</field>
             <field name="category_id" ref="base.module_category_administration"/>
@@ -12,7 +12,7 @@
             <field name="name">Cold Storage Manager</field>
             <field name="category_id" ref="base.module_category_administration"/>
             <field name="comment">Can approve/cancel, edit tariffs, run billing</field>
-            <field name="implied_ids" eval="[(4, ref('group_cs_user'))]"/>
+            <field name="implied_ids" eval="[(4, ref('cs_cold_storage.group_cs_user'))]"/>
         </record>
         
         <record id="group_cs_accountant" model="res.groups">
