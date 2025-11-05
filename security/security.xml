@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data noupdate="1">
-        
-        <!-- Cold Storage Groups -->
+    <!-- Cold Storage Groups - must be created without noupdate so they exist when CSV is loaded -->
+    <data>
         <record id="group_cs_user" model="res.groups">
             <field name="name">Cold Storage User</field>
             <field name="category_id" ref="base.module_category_administration"/>
@@ -27,8 +26,10 @@
             <field name="category_id" ref="base.module_category_administration"/>
             <field name="comment">Can execute stock pickings</field>
         </record>
-        
-        <!-- Record Rules -->
+    </data>
+    
+    <!-- Record Rules -->
+    <data noupdate="1">
         
         <!-- Intake Rules -->
         <record id="cs_storage_intake_rule_user" model="ir.rule">
