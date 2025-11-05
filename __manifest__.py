@@ -41,6 +41,7 @@
         'mail',
     ],
     'data': [
+        'security/groups.xml',
         'security/security.xml',
         'security/ir.model.access.csv',
         'data/sequence_data.xml',

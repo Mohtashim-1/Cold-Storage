@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Cold Storage Groups - loaded first to ensure they exist when CSV references them -->
+    <data>
+        <record id="group_cs_user" model="res.groups">
+            <field name="name">Cold Storage User</field>
+            <field name="category_id" ref="base.module_category_administration"/>
+            <field name="comment">Can create intake/release, read tariffs</field>
+        </record>
+        
+        <record id="group_cs_manager" model="res.groups">
+            <field name="name">Cold Storage Manager</field>
+            <field name="category_id" ref="base.module_category_administration"/>
+            <field name="comment">Can approve/cancel, edit tariffs, run billing</field>
+            <field name="implied_ids" eval="[(4, ref('group_cs_user'))]"/>
+        </record>
+        
+        <record id="group_cs_accountant" model="res.groups">
+            <field name="name">Cold Storage Accountant</field>
+            <field name="category_id" ref="base.module_category_administration"/>
+            <field name="comment">Can validate invoices</field>
+        </record>
+        
+        <record id="group_cs_warehouse" model="res.groups">
+            <field name="name">Cold Storage Warehouse</field>
+            <field name="category_id" ref="base.module_category_administration"/>
+            <field name="comment">Can execute stock pickings</field>
+        </record>
+    </data>
+</odoo>
+
