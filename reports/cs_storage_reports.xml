@@ -7,8 +7,8 @@
             <field name="name">Storage Intake Report</field>
             <field name="model">cs.storage.intake</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">cs_cold_storage.report_cs_storage_intake</field>
-            <field name="report_file">cs_cold_storage.report_cs_storage_intake</field>
+            <field name="report_name">cold_storage.report_cs_storage_intake</field>
+            <field name="report_file">cold_storage.report_cs_storage_intake</field>
             <field name="binding_model_id" ref="model_cs_storage_intake"/>
             <field name="binding_type">report</field>
         </record>
@@ -18,8 +18,8 @@
             <field name="name">Storage Release Report</field>
             <field name="model">cs.stock.release</field>
             <field name="report_type">qweb-pdf</field>
-            <field name="report_name">cs_cold_storage.report_cs_stock_release</field>
-            <field name="report_file">cs_cold_storage.report_cs_stock_release</field>
+            <field name="report_name">cold_storage.report_cs_stock_release</field>
+            <field name="report_file">cold_storage.report_cs_stock_release</field>
             <field name="binding_model_id" ref="model_cs_stock_release"/>
             <field name="binding_type">report</field>
         </record>

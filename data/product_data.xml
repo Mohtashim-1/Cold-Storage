@@ -12,7 +12,7 @@
         <record id="product_cold_storage_service" model="product.product">
             <field name="name">Cold Storage Service (Daily)</field>
             <field name="type">service</field>
-            <field name="categ_id" ref="cs_cold_storage.product_category_cold_storage"/>
+            <field name="categ_id" ref="cold_storage.product_category_cold_storage"/>
             <field name="list_price">0.0</field>
             <field name="standard_price">0.0</field>
             <field name="sale_ok">True</field>

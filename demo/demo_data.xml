@@ -31,7 +31,7 @@
             <field name="basis">day_weight</field>
             <field name="price_unit">2.50</field>
             <field name="currency_id" ref="base.USD"/>
-            <field name="price_product_id" ref="cs_cold_storage.product_cold_storage_service"/>
+            <field name="price_product_id" ref="cold_storage.product_cold_storage_service"/>
             <field name="rounding_policy">ceil_day</field>
             <field name="min_bill_days">1.0</field>
             <field name="min_temp">-30</field>
@@ -43,7 +43,7 @@
             <field name="basis">day_volume</field>
             <field name="price_unit">15.00</field>
             <field name="currency_id" ref="base.USD"/>
-            <field name="price_product_id" ref="cs_cold_storage.product_cold_storage_service"/>
+            <field name="price_product_id" ref="cold_storage.product_cold_storage_service"/>
             <field name="rounding_policy">half_up</field>
             <field name="min_bill_days">1.0</field>
             <field name="min_temp">0</field>
@@ -55,7 +55,7 @@
             <field name="basis">flat</field>
             <field name="price_unit">50.00</field>
             <field name="currency_id" ref="base.USD"/>
-            <field name="price_product_id" ref="cs_cold_storage.product_cold_storage_service"/>
+            <field name="price_product_id" ref="cold_storage.product_cold_storage_service"/>
             <field name="rounding_policy">exact_hours</field>
             <field name="min_bill_days">0.5</field>
         </record>

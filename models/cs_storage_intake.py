@@ -220,7 +220,7 @@ class CsStorageIntake(models.Model):
     
     def action_view_releases(self):
         """View related releases"""
-        action = self.env.ref('cs_cold_storage.action_cs_stock_release').read()[0]
+        action = self.env.ref('cold_storage.action_cs_stock_release').read()[0]
         action['domain'] = [('intake_id', '=', self.id)]
         return action
     

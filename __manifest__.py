@@ -65,5 +65,5 @@
     'application': True,
     'auto_install': False,
     'license': 'LGPL-3',
-    'icon': '/cs_cold_storage/static/description/icon.png',
+    'icon': '/cold_storage/static/description/icon.png',
 }
