@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Cold Storage Groups - loaded first to ensure they exist when CSV references them -->
-    <data>
+    <data noupdate="0">
         <record id="group_cs_user" model="res.groups">
             <field name="name">Cold Storage User</field>
             <field name="category_id" ref="base.module_category_administration"/>
