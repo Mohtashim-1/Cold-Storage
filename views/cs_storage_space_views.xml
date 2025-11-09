@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Storage Space Tree View -->
+        <record id="view_cs_storage_space_tree" model="ir.ui.view">
+            <field name="name">cs.storage.space.tree</field>
+            <field name="model">cs.storage.space</field>
+            <field name="arch" type="xml">
+                <tree string="Storage Spaces" decoration-success="is_available==True" decoration-muted="is_available==False">
+                    <field name="name"/>
+                    <field name="location_id"/>
+                    <field name="current_volume"/>
+                    <field name="max_volume"/>
+                    <field name="current_weight"/>
+                    <field name="max_weight"/>
+                    <field name="volume_utilization" widget="progressbar" optional="hide"/>
+                    <field name="weight_utilization" widget="progressbar" optional="hide"/>
+                    <field name="availability_status" widget="badge" decoration-success="availability_status=='available'" decoration-warning="availability_status=='occupied'"/>
+                    <field name="is_available"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Storage Space Form View -->
+        <record id="view_cs_storage_space_form" model="ir.ui.view">
+            <field name="name">cs.storage.space.form</field>
+            <field name="model">cs.storage.space</field>
+            <field name="arch" type="xml">
+                <form string="Storage Space">
+                    <header>
+                        <button name="action_view_stored_items" string="View Stored Items" type="object" class="oe_stat_button" icon="fa-cubes"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_view_stored_items" type="object" 
+                                    class="oe_stat_button" icon="fa-cubes">
+                                <field name="intake_line_ids" widget="statinfo" string="Items"/>
+                            </button>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="location_id" options="{'no_create': True}"/>
+                                <field name="active"/>
+                            </group>
+                            <group>
+                                <field name="availability_status" readonly="1"/>
+                                <field name="is_available" readonly="1"/>
+                            </group>
+                        </group>
+                        <group string="Capacity">
+                            <group string="Volume">
+                                <field name="max_volume"/>
+                                <field name="current_volume" readonly="1"/>
+                                <field name="volume_utilization" widget="progressbar" readonly="1"/>
+                            </group>
+                            <group string="Weight">
+                                <field name="max_weight"/>
+                                <field name="current_weight" readonly="1"/>
+                                <field name="weight_utilization" widget="progressbar" readonly="1"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Stored Items">
+                                <field name="intake_line_ids" readonly="1">
+                                    <tree>
+                                        <field name="intake_id"/>
+                                        <field name="product_id"/>
+                                        <field name="qty_in"/>
+                                        <field name="qty_out"/>
+                                        <field name="volume"/>
+                                        <field name="weight"/>
+                                    </tree>
+                                </field>
+                            </page>
+                            <page string="Notes">
+                                <field name="notes" placeholder="Additional notes about this space..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Storage Space Search View -->
+        <record id="view_cs_storage_space_search" model="ir.ui.view">
+            <field name="name">cs.storage.space.search</field>
+            <field name="model">cs.storage.space</field>
+            <field name="arch" type="xml">
+                <search string="Storage Spaces">
+                    <field name="name"/>
+                    <field name="location_id"/>
+                    <filter string="Available" name="available" domain="[('is_available', '=', True)]"/>
+                    <filter string="Occupied" name="occupied" domain="[('availability_status', '=', 'occupied')]"/>
+                    <separator/>
+                    <filter string="Active" name="active" domain="[('active', '=', True)]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Location" name="group_location" context="{'group_by': 'location_id'}"/>
+                        <filter string="Status" name="group_status" context="{'group_by': 'availability_status'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        
+        <!-- Storage Space Action -->
+        <record id="action_cs_storage_space" model="ir.actions.act_window">
+            <field name="name">Storage Spaces</field>
+            <field name="res_model">cs.storage.space</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_cs_storage_space_search"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new storage space
+                </p>
+                <p>
+                    Define storage spaces/bins within freezer locations to track availability and capacity.
+                </p>
+            </field>
+        </record>
+        
+    </data>
+</odoo>
+

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Storage Report Wizard Form -->
+        <record id="view_cs_storage_report_form" model="ir.ui.view">
+            <field name="name">cs.storage.report.form</field>
+            <field name="model">cs.storage.report</field>
+            <field name="arch" type="xml">
+                <form string="Cold Storage Report">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="report_type"/>
+                                <field name="export_format"/>
+                                <field name="date_from"/>
+                                <field name="date_to"/>
+                            </group>
+                            <group>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="partner_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                                <field name="location_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name="action_generate_report" string="Generate Report" type="object" class="btn-primary"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Storage Report Wizard Action -->
+        <record id="action_cs_storage_report" model="ir.actions.act_window">
+            <field name="name">Cold Storage Reports</field>
+            <field name="res_model">cs.storage.report</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+        
+        <!-- Consignment Detail Report Action -->
+        <record id="action_report_consignment_detail" model="ir.actions.act_window">
+            <field name="name">Consignment Detail Report</field>
+            <field name="res_model">cs.storage.intake</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{
+                'search_default_group_partner': 1,
+                'search_default_group_location': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No consignments found!
+                </p>
+                <p>
+                    This report shows consignments with duration, pricing, and invoicing details.
+                    Use the Print button to generate PDF or Excel reports.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Location-wise Report Action -->
+        <record id="action_report_location_wise" model="ir.actions.act_window">
+            <field name="name">Location-wise Consignment Report</field>
+            <field name="res_model">cs.storage.intake</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('state', 'in', ['checked_in', 'partially_out'])]</field>
+            <field name="context">{
+                'search_default_group_location': 1,
+                'search_default_group_partner': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No consignments found!
+                </p>
+                <p>
+                    This report shows consignments grouped by location.
+                    Use the Print button to generate PDF or Excel reports.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Material Received Report Action -->
+        <record id="action_report_material_received" model="ir.actions.act_window">
+            <field name="name">Material Received from Party Report</field>
+            <field name="res_model">cs.storage.intake</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{
+                'search_default_group_partner': 1,
+                'search_default_group_date_in': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No material received found!
+                </p>
+                <p>
+                    This report shows materials received from parties within the selected date range.
+                    Use the Print button to generate PDF or Excel reports.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Storage Capacity Report Action -->
+        <record id="action_report_storage_capacity" model="ir.actions.act_window">
+            <field name="name">Storage Capacity &amp; Utilization Report</field>
+            <field name="res_model">stock.location</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('is_freezer', '=', True)]</field>
+            <field name="context">{
+                'search_default_group_company': 1,
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No freezer locations found!
+                </p>
+                <p>
+                    This report shows storage capacity, current usage, and available space for each location.
+                    Use the Print button to generate PDF or Excel reports.
+                </p>
+            </field>
+        </record>
+        
+    </data>
+</odoo>
+

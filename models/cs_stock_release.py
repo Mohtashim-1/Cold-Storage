@@ -76,6 +76,22 @@ class CsStockRelease(models.Model):
         store=True
     )
     
+    # Gate Entry
+    gate_out_id = fields.Many2one(
+        'cs.gate.entry',
+        string='Gate Out Entry',
+        readonly=True,
+        help='Gate entry record for this release'
+    )
+    vehicle_number = fields.Char(
+        string='Vehicle Number',
+        help='Vehicle registration number (from gate entry)'
+    )
+    driver_name = fields.Char(
+        string='Driver Name',
+        help='Driver name (from gate entry)'
+    )
+    
     # Company
     company_id = fields.Many2one(
         'res.company',

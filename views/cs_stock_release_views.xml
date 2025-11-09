@@ -46,6 +46,9 @@
                             </group>
                             <group>
                                 <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="gate_out_id" readonly="1"/>
+                                <field name="vehicle_number" readonly="1"/>
+                                <field name="driver_name" readonly="1"/>
                                 <field name="total_qty_out" readonly="1"/>
                                 <field name="total_amount" widget="monetary" readonly="1"/>
                                 <field name="currency_id" invisible="1"/>

@@ -126,6 +126,47 @@ class CsStorageIntake(models.Model):
         help='Related storage contract (optional)'
     )
     
+    # Gate Entry
+    gate_in_id = fields.Many2one(
+        'cs.gate.entry',
+        string='Gate In Entry',
+        readonly=True,
+        help='Gate entry record for this intake'
+    )
+    vehicle_number = fields.Char(
+        string='Vehicle Number',
+        help='Vehicle registration number (from gate entry)'
+    )
+    driver_name = fields.Char(
+        string='Driver Name',
+        help='Driver name (from gate entry)'
+    )
+    
+    # Billing
+    billing_frequency = fields.Selection([
+        ('weekly', 'Weekly'),
+        ('fortnightly', 'Fortnightly'),
+        ('monthly', 'Monthly'),
+        ('consignment', 'Consignment-wise'),
+    ], string='Billing Frequency', default='monthly', help='Billing frequency for this intake')
+    last_billed_date = fields.Date(
+        string='Last Billed Date',
+        help='Date when this intake was last billed'
+    )
+    next_billing_date = fields.Date(
+        string='Next Billing Date',
+        compute='_compute_next_billing_date',
+        store=True,
+        help='Next billing date based on frequency'
+    )
+    
+    # Available spaces count
+    available_spaces_count = fields.Integer(
+        string='Available Spaces',
+        compute='_compute_available_spaces',
+        help='Number of available storage spaces in this location'
+    )
+    
     # Company
     company_id = fields.Many2one(
         'res.company',
@@ -133,6 +174,67 @@ class CsStorageIntake(models.Model):
         default=lambda self: self.env.company,
         required=True
     )
+    
+    @api.depends('location_id')
+    def _compute_available_spaces(self):
+        """Compute number of available spaces in the location"""
+        for record in self:
+            if record.location_id:
+                available_spaces = self.env['cs.storage.space'].search_count([
+                    ('location_id', '=', record.location_id.id),
+                    ('is_available', '=', True),
+                    ('active', '=', True)
+                ])
+                record.available_spaces_count = available_spaces
+            else:
+                record.available_spaces_count = 0
+    
+    def action_view_available_spaces(self):
+        """View available storage spaces for this location"""
+        self.ensure_one()
+        if not self.location_id:
+            raise UserError(_('Please select a location first.'))
+        
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Available Storage Spaces'),
+            'res_model': 'cs.storage.space',
+            'view_mode': 'tree,form',
+            'domain': [
+                ('location_id', '=', self.location_id.id),
+                ('is_available', '=', True),
+                ('active', '=', True)
+            ],
+            'context': {
+                'default_location_id': self.location_id.id,
+                'search_default_available': 1,
+            },
+            'target': 'new',
+        }
+    
+    @api.depends('date_in', 'billing_frequency', 'last_billed_date')
+    def _compute_next_billing_date(self):
+        for record in self:
+            if not record.date_in:
+                record.next_billing_date = False
+                continue
+            
+            from datetime import timedelta
+            base_date = record.last_billed_date or record.date_in.date()
+            
+            if record.billing_frequency == 'weekly':
+                record.next_billing_date = base_date + timedelta(days=7)
+            elif record.billing_frequency == 'fortnightly':
+                record.next_billing_date = base_date + timedelta(days=14)
+            elif record.billing_frequency == 'monthly':
+                # Add 1 month
+                if base_date.month == 12:
+                    record.next_billing_date = base_date.replace(year=base_date.year + 1, month=1)
+                else:
+                    record.next_billing_date = base_date.replace(month=base_date.month + 1)
+            else:  # consignment
+                # Will be billed on release
+                record.next_billing_date = False
     
     @api.depends('line_ids.qty_in', 'line_ids.qty_out', 'line_ids.weight', 
                  'line_ids.volume', 'line_ids.amount_subtotal')
@@ -159,7 +261,11 @@ class CsStorageIntake(models.Model):
     def create(self, vals):
         if vals.get('name', _('New')) == _('New'):
             vals['name'] = self.env['ir.sequence'].next_by_code('cs.storage.intake') or _('New')
-        return super().create(vals)
+        result = super().create(vals)
+        # If created from gate entry, link the gate entry to this intake
+        if result.gate_in_id and not result.gate_in_id.intake_id:
+            result.gate_in_id.intake_id = result.id
+        return result
     
     def action_check_in(self):
         """Check in the intake and create stock moves if enabled"""
@@ -376,16 +482,89 @@ class CsStorageIntakeLine(models.Model):
         string='Expiry Date',
         help='Expiry date for perishables'
     )
-    # bin_id = fields.Many2one(
-    #     'cs.storage.bin',
-    #     string='Storage Bin',
-    #     help='Assigned storage bin/rack'
-    # )
+    space_id = fields.Many2one(
+        'cs.storage.space',
+        string='Storage Space',
+        domain="[('location_id', '=', parent.location_id), ('is_available', '=', True), ('active', '=', True)]",
+        help='Assigned storage space/bin'
+    )
+    
+    @api.onchange('intake_id')
+    def _onchange_intake_id(self):
+        """Update space domain when intake changes"""
+        if self.intake_id and self.intake_id.location_id:
+            return {
+                'domain': {
+                    'space_id': [
+                        ('location_id', '=', self.intake_id.location_id.id),
+                        ('is_available', '=', True),
+                        ('active', '=', True)
+                    ]
+                }
+            }
+    
+    @api.onchange('volume', 'weight', 'intake_id')
+    def _onchange_volume_weight(self):
+        """Suggest available space based on volume/weight"""
+        if not self.intake_id or not self.intake_id.location_id:
+            return
+        
+        # Find available spaces that can accommodate this item
+        available_spaces = self.env['cs.storage.space'].search([
+            ('location_id', '=', self.intake_id.location_id.id),
+            ('is_available', '=', True),
+            ('active', '=', True)
+        ])
+        
+        # Filter spaces that have enough capacity
+        suitable_spaces = available_spaces
+        if self.volume:
+            suitable_spaces = suitable_spaces.filtered(
+                lambda s: not s.max_volume or (s.current_volume + self.volume) <= s.max_volume
+            )
+        if self.weight:
+            suitable_spaces = suitable_spaces.filtered(
+                lambda s: not s.max_weight or (s.current_weight + self.weight) <= s.max_weight
+            )
+        
+        # If there's only one suitable space, auto-select it
+        if len(suitable_spaces) == 1 and not self.space_id:
+            self.space_id = suitable_spaces[0]
+        
+        return {
+            'domain': {
+                'space_id': [('id', 'in', suitable_spaces.ids)]
+            }
+        }
     qc_state = fields.Selection([
         ('pending', 'Pending'),
         ('ok', 'OK'),
         ('reject', 'Rejected'),
     ], string='QC State', default='pending')
+    
+    # Duration format display
+    duration_display = fields.Char(
+        string='Duration',
+        compute='_compute_duration_display',
+        help='Duration in readable format (e.g., 1 day 2 hours)'
+    )
+    
+    @api.depends('duration_hours', 'duration_days')
+    def _compute_duration_display(self):
+        for line in self:
+            if line.duration_hours:
+                days = int(line.duration_days)
+                hours = int(line.duration_hours % 24)
+                if days > 0 and hours > 0:
+                    line.duration_display = f"{days} day{'s' if days > 1 else ''} {hours} hour{'s' if hours > 1 else ''}"
+                elif days > 0:
+                    line.duration_display = f"{days} day{'s' if days > 1 else ''}"
+                elif hours > 0:
+                    line.duration_display = f"{hours} hour{'s' if hours > 1 else ''}"
+                else:
+                    line.duration_display = "0 hours"
+            else:
+                line.duration_display = "0 hours"
     
     @api.depends('date_in', 'date_out', 'intake_id.state', 'intake_id.date_in')
     def _compute_duration(self):

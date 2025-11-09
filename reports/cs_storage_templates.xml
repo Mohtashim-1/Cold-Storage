@@ -128,5 +128,233 @@
             </t>
         </template>
         
+        <!-- Consignment Detail Report Template -->
+        <template id="report_consignment_detail_pdf">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <div class="row">
+                                <div class="col-12 text-center">
+                                    <h2>CONSIGNMENT DETAIL REPORT</h2>
+                                </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr style="background-color: #366092; color: white;">
+                                            <th>Intake No.</th>
+                                            <th>Date In</th>
+                                            <th>Customer</th>
+                                            <th>Location</th>
+                                            <th>Vehicle No.</th>
+                                            <th>Driver</th>
+                                            <th>Product</th>
+                                            <th>Lot</th>
+                                            <th>Qty In</th>
+                                            <th>Qty Out</th>
+                                            <th>Weight (kg)</th>
+                                            <th>Duration (Days)</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="docs" t-as="intake">
+                                            <t t-foreach="intake.line_ids" t-as="line">
+                                                <tr>
+                                                    <td><span t-field="intake.name"/></td>
+                                                    <td><span t-field="intake.date_in" t-options="{'widget': 'date'}"/></td>
+                                                    <td><span t-field="intake.partner_id"/></td>
+                                                    <td><span t-field="intake.location_id"/></td>
+                                                    <td><span t-field="intake.vehicle_number"/></td>
+                                                    <td><span t-field="intake.driver_name"/></td>
+                                                    <td><span t-field="line.product_id"/></td>
+                                                    <td><span t-field="line.lot_id"/></td>
+                                                    <td class="text-right"><span t-field="line.qty_in"/></td>
+                                                    <td class="text-right"><span t-field="line.qty_out"/></td>
+                                                    <td class="text-right"><span t-field="line.weight"/></td>
+                                                    <td class="text-right"><span t-field="line.duration_days"/></td>
+                                                    <td class="text-right"><span t-field="line.amount_subtotal" t-options="{'widget': 'monetary', 'display_currency': intake.currency_id}"/></td>
+                                                    <td><span t-field="intake.state"/></td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+        
+        <!-- Location-wise Report Template -->
+        <template id="report_location_wise_pdf">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <div class="row">
+                                <div class="col-12 text-center">
+                                    <h2>LOCATION-WISE CONSIGNMENT REPORT</h2>
+                                </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr style="background-color: #366092; color: white;">
+                                            <th>Location</th>
+                                            <th>Intake No.</th>
+                                            <th>Date In</th>
+                                            <th>Customer</th>
+                                            <th>Vehicle No.</th>
+                                            <th>Driver</th>
+                                            <th>Product</th>
+                                            <th>Qty In</th>
+                                            <th>Qty Out</th>
+                                            <th>Weight (kg)</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="docs" t-as="intake">
+                                            <t t-foreach="intake.line_ids" t-as="line">
+                                                <tr>
+                                                    <td><span t-field="intake.location_id"/></td>
+                                                    <td><span t-field="intake.name"/></td>
+                                                    <td><span t-field="intake.date_in" t-options="{'widget': 'date'}"/></td>
+                                                    <td><span t-field="intake.partner_id"/></td>
+                                                    <td><span t-field="intake.vehicle_number"/></td>
+                                                    <td><span t-field="intake.driver_name"/></td>
+                                                    <td><span t-field="line.product_id"/></td>
+                                                    <td class="text-right"><span t-field="line.qty_in"/></td>
+                                                    <td class="text-right"><span t-field="line.qty_out"/></td>
+                                                    <td class="text-right"><span t-field="line.weight"/></td>
+                                                    <td class="text-right"><span t-field="line.amount_subtotal" t-options="{'widget': 'monetary', 'display_currency': intake.currency_id}"/></td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+        
+        <!-- Material Received Report Template -->
+        <template id="report_material_received_pdf">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <div class="row">
+                                <div class="col-12 text-center">
+                                    <h2>MATERIAL RECEIVED FROM PARTY REPORT</h2>
+                                </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr style="background-color: #366092; color: white;">
+                                            <th>Date</th>
+                                            <th>Intake No.</th>
+                                            <th>Party/Customer</th>
+                                            <th>Location</th>
+                                            <th>Vehicle No.</th>
+                                            <th>Driver</th>
+                                            <th>Product</th>
+                                            <th>Lot</th>
+                                            <th>Qty In</th>
+                                            <th>Weight (kg)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="docs" t-as="intake">
+                                            <t t-foreach="intake.line_ids" t-as="line">
+                                                <tr>
+                                                    <td><span t-field="intake.date_in" t-options="{'widget': 'date'}"/></td>
+                                                    <td><span t-field="intake.name"/></td>
+                                                    <td><span t-field="intake.partner_id"/></td>
+                                                    <td><span t-field="intake.location_id"/></td>
+                                                    <td><span t-field="intake.vehicle_number"/></td>
+                                                    <td><span t-field="intake.driver_name"/></td>
+                                                    <td><span t-field="line.product_id"/></td>
+                                                    <td><span t-field="line.lot_id"/></td>
+                                                    <td class="text-right"><span t-field="line.qty_in"/></td>
+                                                    <td class="text-right"><span t-field="line.weight"/></td>
+                                                </tr>
+                                            </t>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+        
+        <!-- Storage Capacity Report Template -->
+        <template id="report_storage_capacity_pdf">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="oe_structure"/>
+                        <div class="row">
+                            <div class="col-12 text-center">
+                                <h2>STORAGE CAPACITY &amp; UTILIZATION REPORT</h2>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr style="background-color: #366092; color: white;">
+                                            <th>Location</th>
+                                            <th>Max Volume (m³)</th>
+                                            <th>Current Volume (m³)</th>
+                                            <th>Available Volume (m³)</th>
+                                            <th>Volume Utilization %</th>
+                                            <th>Max Weight (kg)</th>
+                                            <th>Current Weight (kg)</th>
+                                            <th>Available Weight (kg)</th>
+                                            <th>Weight Utilization %</th>
+                                            <th>Active Intakes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="docs" t-as="location">
+                                            <tr>
+                                                <td><span t-field="location.name"/></td>
+                                                <td class="text-right"><span t-field="location.max_volume"/></td>
+                                                <td class="text-right"><span t-field="location.current_volume"/></td>
+                                                <td class="text-right">
+                                                    <span t-esc="(location.max_volume - location.current_volume) if location.max_volume else 0"/>
+                                                </td>
+                                                <td class="text-right"><span t-field="location.volume_utilization"/>%</td>
+                                                <td class="text-right"><span t-field="location.max_weight"/></td>
+                                                <td class="text-right"><span t-field="location.current_weight"/></td>
+                                                <td class="text-right">
+                                                    <span t-esc="(location.max_weight - location.current_weight) if location.max_weight else 0"/>
+                                                </td>
+                                                <td class="text-right"><span t-field="location.weight_utilization"/>%</td>
+                                                <td class="text-right"><span t-field="location.intake_count"/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </template>
+        
     </data>
 </odoo>

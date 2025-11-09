@@ -35,5 +35,27 @@
             <field name="company_id" eval="False"/>
         </record>
         
+        <!-- Gate Entry Sequence -->
+        <record id="seq_cs_gate_entry" model="ir.sequence">
+            <field name="name">Gate Entry (In)</field>
+            <field name="code">cs.gate.entry</field>
+            <field name="prefix">GIN/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
+        <!-- Gate Exit Sequence -->
+        <record id="seq_cs_gate_exit" model="ir.sequence">
+            <field name="name">Gate Entry (Out)</field>
+            <field name="code">cs.gate.exit</field>
+            <field name="prefix">GOUT/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="number_next">1</field>
+            <field name="number_increment">1</field>
+            <field name="company_id" eval="False"/>
+        </record>
+        
     </data>
 </odoo>

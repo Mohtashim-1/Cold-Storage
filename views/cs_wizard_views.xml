@@ -63,6 +63,8 @@
                             </group>
                         </group>
                         <group>
+                            <field name="bill_unbilled_only"/>
+                            <field name="reset_billing_date"/>
                             <field name="create_invoices"/>
                         </group>
                         <group invisible="not create_invoices">

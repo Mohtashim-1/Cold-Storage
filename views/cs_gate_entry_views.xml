@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Gate Entry Tree View -->
+        <record id="view_cs_gate_entry_tree" model="ir.ui.view">
+            <field name="name">cs.gate.entry.tree</field>
+            <field name="model">cs.gate.entry</field>
+            <field name="arch" type="xml">
+                <tree string="Gate Entries" decoration-info="entry_type=='gate_in'" decoration-success="entry_type=='gate_out'">
+                    <field name="name"/>
+                    <field name="entry_type"/>
+                    <field name="vehicle_number"/>
+                    <field name="driver_name"/>
+                    <field name="entry_time"/>
+                    <field name="guard_user_id"/>
+                    <field name="state"/>
+                    <field name="intake_id" optional="hide"/>
+                    <field name="release_id" optional="hide"/>
+                </tree>
+            </field>
+        </record>
+        
+        <!-- Gate Entry Form View -->
+        <record id="view_cs_gate_entry_form" model="ir.ui.view">
+            <field name="name">cs.gate.entry.form</field>
+            <field name="model">cs.gate.entry</field>
+            <field name="arch" type="xml">
+                <form string="Gate Entry">
+                    <header>
+                        <button name="action_create_intake" string="Create Storage Intake" type="object" 
+                                class="oe_highlight" 
+                                invisible="entry_type != 'gate_in' or intake_id"/>
+                        <button name="action_confirm" string="Confirm" type="object" class="btn-primary" 
+                                invisible="state != 'draft'"/>
+                        <button name="action_cancel" string="Cancel" type="object" 
+                                invisible="state in ['confirmed', 'cancelled']"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,confirmed"/>
+                    </header>
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="%(action_cs_storage_intake)d" type="action" 
+                                    invisible="not intake_id"
+                                    class="oe_stat_button" icon="fa-truck" context="{'default_gate_in_id': active_id}">
+                                <field name="intake_id" widget="statinfo" string="Intake"/>
+                            </button>
+                            <button name="%(action_cs_stock_release)d" type="action" 
+                                    invisible="not release_id"
+                                    class="oe_stat_button" icon="fa-truck" context="{'default_gate_out_id': active_id}">
+                                <field name="release_id" widget="statinfo" string="Release"/>
+                            </button>
+                        </div>
+                        <group>
+                            <group>
+                                <field name="name" readonly="1"/>
+                                <field name="entry_type"/>
+                                <field name="entry_time"/>
+                                <field name="entry_date" readonly="1"/>
+                            </group>
+                            <group>
+                                <field name="vehicle_number"/>
+                                <field name="driver_name"/>
+                                <field name="driver_contact"/>
+                                <field name="guard_user_id" readonly="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <group>
+                                <field name="intake_id" 
+                                       domain="[('state', '!=', 'cancelled')]"
+                                       invisible="entry_type == 'gate_out'"
+                                       placeholder="Optional - Link to storage intake later"/>
+                            </group>
+                            <group>
+                                <field name="release_id" 
+                                       domain="[('state', '!=', 'cancelled')]"
+                                       invisible="entry_type == 'gate_in'"
+                                       placeholder="Optional - Link to storage release later"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Notes">
+                                <field name="notes" placeholder="Additional notes or remarks..."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                    <chatter/>
+                </form>
+            </field>
+        </record>
+        
+        <!-- Gate Entry Search View -->
+        <record id="view_cs_gate_entry_search" model="ir.ui.view">
+            <field name="name">cs.gate.entry.search</field>
+            <field name="model">cs.gate.entry</field>
+            <field name="arch" type="xml">
+                <search string="Gate Entries">
+                    <field name="name"/>
+                    <field name="vehicle_number"/>
+                    <field name="driver_name"/>
+                    <field name="intake_id"/>
+                    <field name="release_id"/>
+                    <filter string="Gate In" name="gate_in" domain="[('entry_type', '=', 'gate_in')]"/>
+                    <filter string="Gate Out" name="gate_out" domain="[('entry_type', '=', 'gate_out')]"/>
+                    <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                    <filter string="Confirmed" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                    <separator/>
+                    <filter string="Today" name="today" domain="[('entry_date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                    <filter string="This Week" name="this_week" domain="[('entry_date', '>=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                    <group expand="0" string="Group By">
+                        <filter string="Entry Type" name="group_entry_type" context="{'group_by': 'entry_type'}"/>
+                        <filter string="State" name="group_state" context="{'group_by': 'state'}"/>
+                        <filter string="Date" name="group_date" context="{'group_by': 'entry_date'}"/>
+                        <filter string="Guard" name="group_guard" context="{'group_by': 'guard_user_id'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+        
+        <!-- Gate Entry Action -->
+        <record id="action_cs_gate_entry" model="ir.actions.act_window">
+            <field name="name">Gate Entries</field>
+            <field name="res_model">cs.gate.entry</field>
+            <field name="view_mode">tree,form</field>
+            <field name="search_view_id" ref="view_cs_gate_entry_search"/>
+            <field name="context">{'default_entry_type': 'gate_in', 'default_guard_user_id': uid}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a new gate entry
+                </p>
+                <p>
+                    Record vehicle entry/exit at the gate with driver and vehicle information.
+                </p>
+            </field>
+        </record>
+        
+        <!-- Gate In Action -->
+        <record id="action_cs_gate_in" model="ir.actions.act_window">
+            <field name="name">Gate In</field>
+            <field name="res_model">cs.gate.entry</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('entry_type', '=', 'gate_in')]</field>
+            <field name="context">{'default_entry_type': 'gate_in', 'default_guard_user_id': uid, 'search_default_gate_in': 1}</field>
+        </record>
+        
+        <!-- Gate Out Action -->
+        <record id="action_cs_gate_out" model="ir.actions.act_window">
+            <field name="name">Gate Out</field>
+            <field name="res_model">cs.gate.entry</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('entry_type', '=', 'gate_out')]</field>
+            <field name="context">{'default_entry_type': 'gate_out', 'default_guard_user_id': uid, 'search_default_gate_out': 1}</field>
+        </record>
+        
+    </data>
+</odoo>
+

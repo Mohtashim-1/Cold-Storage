@@ -26,6 +26,12 @@
             <field name="category_id" ref="base.module_category_administration"/>
             <field name="comment">Can execute stock pickings</field>
         </record>
+        
+        <record id="group_cs_guard" model="res.groups">
+            <field name="name">Cold Storage Guard</field>
+            <field name="category_id" ref="base.module_category_administration"/>
+            <field name="comment">Can record gate in/out entries</field>
+        </record>
     </data>
 </odoo>
 

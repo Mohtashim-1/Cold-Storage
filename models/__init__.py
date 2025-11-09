@@ -6,3 +6,5 @@ from . import cs_stock_release
 from . import cs_temperature_log
 from . import cs_storage_contract
 from . import stock_location
+from . import cs_gate_entry
+from . import cs_storage_space

@@ -78,5 +78,45 @@
             </field>
         </record>
         
+        <!-- Consignment Detail PDF Report -->
+        <record id="action_report_consignment_detail_pdf" model="ir.actions.report">
+            <field name="name">Consignment Detail Report</field>
+            <field name="model">cs.storage.intake</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">cs_cold_storage.report_consignment_detail_pdf</field>
+            <field name="report_file">cs_cold_storage.report_consignment_detail_pdf</field>
+            <field name="print_report_name">Consignment Detail Report</field>
+        </record>
+        
+        <!-- Location-wise PDF Report -->
+        <record id="action_report_location_wise_pdf" model="ir.actions.report">
+            <field name="name">Location-wise Consignment Report</field>
+            <field name="model">cs.storage.intake</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">cs_cold_storage.report_location_wise_pdf</field>
+            <field name="report_file">cs_cold_storage.report_location_wise_pdf</field>
+            <field name="print_report_name">Location-wise Consignment Report</field>
+        </record>
+        
+        <!-- Material Received PDF Report -->
+        <record id="action_report_material_received_pdf" model="ir.actions.report">
+            <field name="name">Material Received from Party Report</field>
+            <field name="model">cs.storage.intake</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">cs_cold_storage.report_material_received_pdf</field>
+            <field name="report_file">cs_cold_storage.report_material_received_pdf</field>
+            <field name="print_report_name">Material Received from Party Report</field>
+        </record>
+        
+        <!-- Storage Capacity PDF Report -->
+        <record id="action_report_storage_capacity_pdf" model="ir.actions.report">
+            <field name="name">Storage Capacity &amp; Utilization Report</field>
+            <field name="model">stock.location</field>
+            <field name="report_type">qweb-pdf</field>
+            <field name="report_name">cs_cold_storage.report_storage_capacity_pdf</field>
+            <field name="report_file">cs_cold_storage.report_storage_capacity_pdf</field>
+            <field name="print_report_name">'Storage Capacity &amp; Utilization Report'</field>
+        </record>
+        
     </data>
 </odoo>

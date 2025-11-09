@@ -14,6 +14,8 @@
                     <field name="planned_date_out"/>
                     <field name="location_id"/>
                     <field name="temperature_target"/>
+                    <field name="vehicle_number" optional="hide"/>
+                    <field name="driver_name" optional="hide"/>
                     <field name="state" widget="badge" decoration-success="state == 'checked_in'" decoration-warning="state == 'partially_out'" decoration-info="state == 'draft'" decoration-muted="state in ['closed', 'cancelled']"/>
                     <field name="total_amount" widget="monetary"/>
                     <field name="currency_id" invisible="1"/>
@@ -41,6 +43,10 @@
                             <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o">
                                 <field name="invoice_count" widget="statinfo" string="Invoices"/>
                             </button>
+                            <button name="action_view_available_spaces" type="object" class="oe_stat_button" icon="fa-cubes" 
+                                    invisible="not location_id">
+                                <field name="available_spaces_count" widget="statinfo" string="Available Spaces"/>
+                            </button>
                         </div>
                         <div class="oe_title">
                             <h1>
@@ -52,11 +58,17 @@
                                 <field name="partner_id"/>
                                 <field name="date_in"/>
                                 <field name="planned_date_out"/>
+                                <field name="billing_frequency"/>
+                                <field name="last_billed_date" readonly="1"/>
+                                <field name="next_billing_date" readonly="1"/>
                             </group>
                             <group>
                                 <field name="location_id"/>
                                 <field name="temperature_target"/>
                                 <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="gate_in_id" readonly="1"/>
+                                <field name="vehicle_number" readonly="1"/>
+                                <field name="driver_name" readonly="1"/>
                             </group>
                         </group>
                         <field name="note" placeholder="Additional notes..."/>
@@ -72,8 +84,14 @@
                                         <field name="weight"/>
                                         <field name="volume"/>
                                         <field name="pallet_count"/>
+                                        <field name="space_id" 
+                                               options="{'no_create': True}"
+                                               context="{'default_location_id': parent.location_id, 'search_default_available': 1}"
+                                               widget="many2one"
+                                               placeholder="Select available space..."/>
                                         <field name="tariff_rule_id"/>
                                         <field name="price_unit"/>
+                                        <field name="duration_display" readonly="1"/>
                                         <field name="amount_subtotal" widget="monetary"/>
                                         <field name="currency_id" invisible="1"/>
                                         <field name="remark"/>
