@@ -14,7 +14,7 @@
                   parent="menu_cs_cold_storage_root"
                   action="action_cs_storage_intake"
                   sequence="10"
-                  groups="cs_cold_storage.group_cs_user"/>
+                  groups="cold_storage.group_cs_user"/>
         
         <!-- Releases Menu -->
         <menuitem id="menu_cs_stock_release"
@@ -22,14 +22,14 @@
                   parent="menu_cs_cold_storage_root"
                   action="action_cs_stock_release"
                   sequence="20"
-                  groups="cs_cold_storage.group_cs_user"/>
+                  groups="cold_storage.group_cs_user"/>
         
         <!-- Configuration Menu -->
         <menuitem id="menu_cs_configuration"
                   name="Configuration"
                   parent="menu_cs_cold_storage_root"
                   sequence="90"
-                  groups="cs_cold_storage.group_cs_manager"/>
+                  groups="cold_storage.group_cs_manager"/>
         
         <!-- Tariff Rules Menu -->
         <menuitem id="menu_cs_tariff_rule"
@@ -37,7 +37,7 @@
                   parent="menu_cs_configuration"
                   action="action_cs_tariff_rule"
                   sequence="10"
-                  groups="cs_cold_storage.group_cs_manager"/>
+                  groups="cold_storage.group_cs_manager"/>
         
         <!-- Contracts Menu -->
         <menuitem id="menu_cs_storage_contract"
@@ -45,7 +45,7 @@
                   parent="menu_cs_cold_storage_root"
                   action="action_cs_storage_contract"
                   sequence="30"
-                  groups="cs_cold_storage.group_cs_user"/>
+                  groups="cold_storage.group_cs_user"/>
         
         <!-- Temperature Logs Menu -->
         <menuitem id="menu_cs_temperature_log"
@@ -53,14 +53,14 @@
                   parent="menu_cs_cold_storage_root"
                   action="action_cs_temperature_log"
                   sequence="40"
-                  groups="cs_cold_storage.group_cs_user"/>
+                  groups="cold_storage.group_cs_user"/>
         
         <!-- Reports Menu -->
         <menuitem id="menu_cs_reports"
                   name="Reports"
                   parent="menu_cs_cold_storage_root"
                   sequence="80"
-                  groups="cs_cold_storage.group_cs_user"/>
+                  groups="cold_storage.group_cs_user"/>
         
         <!-- Consignment Detail Report -->
         <menuitem id="menu_cs_report_consignment_detail"
@@ -68,7 +68,7 @@
                   parent="menu_cs_reports"
                   action="action_report_consignment_detail"
                   sequence="10"
-                  groups="cs_cold_storage.group_cs_user"/>
+                  groups="cold_storage.group_cs_user"/>
         
         <!-- Location-wise Report -->
         <menuitem id="menu_cs_report_location_wise"
@@ -76,7 +76,7 @@
                   parent="menu_cs_reports"
                   action="action_report_location_wise"
                   sequence="20"
-                  groups="cs_cold_storage.group_cs_user"/>
+                  groups="cold_storage.group_cs_user"/>
         
         <!-- Material Received Report -->
         <menuitem id="menu_cs_report_material_received"
@@ -84,7 +84,7 @@
                   parent="menu_cs_reports"
                   action="action_report_material_received"
                   sequence="30"
-                  groups="cs_cold_storage.group_cs_user"/>
+                  groups="cold_storage.group_cs_user"/>
         
         <!-- Storage Capacity Report -->
         <menuitem id="menu_cs_report_storage_capacity"
@@ -92,7 +92,7 @@
                   parent="menu_cs_reports"
                   action="action_report_storage_capacity"
                   sequence="35"
-                  groups="cs_cold_storage.group_cs_user"/>
+                  groups="cold_storage.group_cs_user"/>
         
         <!-- Storage Reports Wizard -->
         <menuitem id="menu_cs_storage_reports"
@@ -100,14 +100,14 @@
                   parent="menu_cs_reports"
                   action="action_cs_storage_report"
                   sequence="40"
-                  groups="cs_cold_storage.group_cs_user"/>
+                  groups="cold_storage.group_cs_user"/>
         
         <!-- Billing Menu -->
         <menuitem id="menu_cs_billing"
                   name="Billing"
                   parent="menu_cs_cold_storage_root"
                   sequence="70"
-                  groups="cs_cold_storage.group_cs_manager"/>
+                  groups="cold_storage.group_cs_manager"/>
         
         <!-- Monthly Billing Menu -->
         <menuitem id="menu_cs_monthly_billing"
@@ -115,7 +115,7 @@
                   parent="menu_cs_billing"
                   action="action_cs_monthly_billing_wizard"
                   sequence="10"
-                  groups="cs_cold_storage.group_cs_manager"/>
+                  groups="cold_storage.group_cs_manager"/>
         
         <!-- Gate Entries Menu -->
         <menuitem id="menu_cs_gate_entry"
@@ -123,7 +123,7 @@
                   parent="menu_cs_cold_storage_root"
                   action="action_cs_gate_entry"
                   sequence="15"
-                  groups="cs_cold_storage.group_cs_user,cs_cold_storage.group_cs_guard"/>
+                  groups="cold_storage.group_cs_user,cold_storage.group_cs_guard"/>
         
         <!-- Gate In Menu -->
         <menuitem id="menu_cs_gate_in"
@@ -131,7 +131,7 @@
                   parent="menu_cs_gate_entry"
                   action="action_cs_gate_in"
                   sequence="10"
-                  groups="cs_cold_storage.group_cs_user,cs_cold_storage.group_cs_guard"/>
+                  groups="cold_storage.group_cs_user,cold_storage.group_cs_guard"/>
         
         <!-- Gate Out Menu -->
         <menuitem id="menu_cs_gate_out"
@@ -139,7 +139,7 @@
                   parent="menu_cs_gate_entry"
                   action="action_cs_gate_out"
                   sequence="20"
-                  groups="cs_cold_storage.group_cs_user,cs_cold_storage.group_cs_guard"/>
+                  groups="cold_storage.group_cs_user,cold_storage.group_cs_guard"/>
         
         <!-- Storage Spaces Menu -->
         <menuitem id="menu_cs_storage_space"
@@ -147,7 +147,7 @@
                   parent="menu_cs_configuration"
                   action="action_cs_storage_space"
                   sequence="20"
-                  groups="cs_cold_storage.group_cs_manager"/>
+                  groups="cold_storage.group_cs_manager"/>
         
     </data>
 </odoo>
