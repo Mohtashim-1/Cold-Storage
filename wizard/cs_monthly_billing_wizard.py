@@ -51,6 +51,20 @@ class CsMonthlyBillingWizard(models.TransientModel):
         default=True,
         help='Create actual invoices (uncheck for preview only)'
     )
+    invoice_date = fields.Date(
+        string='Invoice Date',
+        default=lambda self: fields.Date.today(),
+        required=True,
+        help='Date to use for the invoice'
+    )
+    
+    # Intake lines
+    intake_line_ids = fields.One2many(
+        'cs.billing.intake.line',
+        'wizard_id',
+        string='Intakes',
+        help='Intakes available for billing'
+    )
     
     # Results
     invoice_count = fields.Integer(
@@ -69,10 +83,94 @@ class CsMonthlyBillingWizard(models.TransientModel):
         related='company_id.currency_id'
     )
     
-    @api.depends('create_invoices')
+    @api.depends('create_invoices', 'intake_line_ids.period_amount', 'intake_line_ids.select')
     def _compute_results(self):
-        # This would be computed after running the billing process
-        pass
+        for record in self:
+            selected_lines = record.intake_line_ids.filtered(lambda l: l.select)
+            record.total_amount = sum(selected_lines.mapped('period_amount'))
+            record.invoice_count = 0  # Will be updated after invoice creation
+    
+    @api.model
+    def create(self, vals):
+        """Load intakes when wizard is created"""
+        wizard = super().create(vals)
+        # Load intakes after creation
+        wizard._load_intakes()
+        return wizard
+    
+    @api.onchange('date_from', 'date_to', 'company_id', 'partner_ids', 'contract_ids', 'bill_unbilled_only')
+    def _onchange_filters(self):
+        """Update intake lines when filters change"""
+        if self.id:  # Only if wizard is already created
+            self._load_intakes()
+    
+    def action_load_intakes(self):
+        """Manually load intakes"""
+        self._load_intakes()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Intakes Loaded'),
+                'message': _('Intakes have been loaded based on the selected filters.'),
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+    
+    def _load_intakes(self):
+        """Load intakes based on filters"""
+        # Get billable intakes - intakes that are still active (not fully released)
+        domain = [
+            ('company_id', '=', self.company_id.id),
+            ('state', 'in', ['checked_in', 'partially_out']),  # Only active intakes
+        ]
+        
+        # Filter by date range - find intakes that need billing for this period
+        if self.bill_unbilled_only:
+            # Bill intakes that:
+            # 1. Were checked in before or on date_to (still in storage during this period)
+            # 2. Have not been billed yet OR last billed date is before date_from
+            domain.append(('date_in', '<=', self.date_to))
+            # Add condition for unbilled or needs billing for this period
+            domain.append('|')
+            domain.append(('last_billed_date', '=', False))
+            domain.append(('last_billed_date', '<', self.date_from))
+        else:
+            # Bill all active intakes that were checked in before or on date_to
+            domain.append(('date_in', '<=', self.date_to))
+        
+        if self.partner_ids:
+            domain.append(('partner_id', 'in', self.partner_ids.ids))
+        
+        if self.contract_ids:
+            domain.append(('contract_id', 'in', self.contract_ids.ids))
+        
+        intakes = self.env['cs.storage.intake'].search(domain)
+        
+        # Create or update intake lines
+        # Use search to avoid ordering issues with empty recordset
+        existing_lines = self.env['cs.billing.intake.line'].search([('wizard_id', '=', self.id)])
+        existing_intakes = existing_lines.mapped('intake_id')
+        
+        # Remove lines for intakes that are no longer in the list
+        to_remove = existing_lines.filtered(lambda l: l.intake_id not in intakes)
+        to_remove.unlink()
+        
+        # Add new lines for intakes not yet in the list
+        for intake in intakes:
+            if intake not in existing_intakes:
+                self.env['cs.billing.intake.line'].create({
+                    'wizard_id': self.id,
+                    'intake_id': intake.id,
+                    'select': True,
+                })
+        
+        # Update existing lines (re-fetch to get new ones)
+        all_lines = self.env['cs.billing.intake.line'].search([('wizard_id', '=', self.id)])
+        for line in all_lines:
+            line._compute_days_info()
+            line._compute_amount_info()
     
     def action_preview_billing(self):
         """Preview billing without creating invoices"""
@@ -84,44 +182,51 @@ class CsMonthlyBillingWizard(models.TransientModel):
         if self.date_from > self.date_to:
             raise UserError(_('From date cannot be after to date.'))
         
+        # Load intakes if not loaded
+        existing_lines = self.env['cs.billing.intake.line'].search([('wizard_id', '=', self.id)])
+        if not existing_lines:
+            self._load_intakes()
+            # Re-fetch after loading
+            existing_lines = self.env['cs.billing.intake.line'].search([('wizard_id', '=', self.id)])
+        
         # Reset last_billed_date if requested (for intakes with no active invoices)
         if self.reset_billing_date:
             self._reset_billing_dates()
         
-        # Get billable intakes
-        domain = [
-            ('company_id', '=', self.company_id.id),
-            ('state', 'in', ['checked_in', 'partially_out']),  # Only active intakes
-        ]
+        # Get selected intakes (allow even if period_amount is 0, as minimum charges might apply)
+        selected_lines = existing_lines.filtered(lambda l: l.select)
         
-        # Date range filter - check if intake date is within range OR if it's unbilled
-        if self.bill_unbilled_only:
-            # Bill unbilled consignments that are still in storage (not released)
-            # Check if last_billed_date is None or before date_from
-            # AND intake date is before or equal to date_to
-            domain.append('&')
-            domain.append('|')
-            domain.append(('last_billed_date', '=', False))
-            domain.append(('last_billed_date', '<', self.date_from))
-            domain.append(('date_in', '<=', self.date_to))
-        else:
-            # Bill all intakes in date range
-            domain.append(('date_in', '>=', self.date_from))
-            domain.append(('date_in', '<=', self.date_to))
+        if not selected_lines:
+            raise UserError(_('Please select at least one intake to bill.'))
         
-        if self.partner_ids:
-            domain.append(('partner_id', 'in', self.partner_ids.ids))
+        # Recalculate period amounts for selected lines to ensure they're up to date
+        for line in selected_lines:
+            line._compute_amount_info()
         
-        if self.contract_ids:
-            domain.append(('contract_id', 'in', self.contract_ids.ids))
+        # Filter out lines with 0 amount after recalculation (but warn user)
+        lines_with_amount = selected_lines.filtered(lambda l: l.period_amount > 0)
+        if not lines_with_amount:
+            # Check if any selected intakes have tariff rules
+            intakes_with_rules = selected_lines.mapped('intake_id').filtered(
+                lambda i: i.line_ids.filtered(lambda l: l.tariff_rule_id)
+            )
+            if not intakes_with_rules:
+                raise UserError(_('Selected intakes do not have tariff rules assigned. Please assign tariff rules to intake lines before billing.'))
+            else:
+                raise UserError(_('Selected intakes have a period amount of 0.00. This may be because:\n'
+                                '- The billing period is too short\n'
+                                '- The intake has no quantity/weight/volume\n'
+                                '- The tariff rule has no price set\n\n'
+                                'Please check the intake details and tariff rules.'))
         
-        intakes = self.env['cs.storage.intake'].search(domain)
+        selected_lines = lines_with_amount
+        
+        intakes = selected_lines.mapped('intake_id')
         
         print(f"\n=== MONTHLY BILLING DEBUG ===")
         print(f"Date Range: {self.date_from} to {self.date_to}")
         print(f"Bill Unbilled Only: {self.bill_unbilled_only}")
-        print(f"Domain: {domain}")
-        print(f"Found Intakes: {len(intakes)}")
+        print(f"Selected Intakes: {len(intakes)}")
         
         if not intakes:
             # Provide helpful error message
@@ -169,16 +274,31 @@ class CsMonthlyBillingWizard(models.TransientModel):
         print(f"=== END MONTHLY BILLING DEBUG ===\n")
         
         # Group by partner for invoice creation
+        # Calculate amount for billing period only (from last_billed_date or date_in to date_to)
         partner_data = {}
         for intake in intakes:
-            partner = intake.partner_id
-            if partner not in partner_data:
-                partner_data[partner] = {
-                    'intakes': [],
-                    'total_amount': 0,
-                }
-            partner_data[partner]['intakes'].append(intake)
-            partner_data[partner]['total_amount'] += intake.total_amount
+            # Calculate billing period
+            billing_start = intake.last_billed_date or intake.date_in.date() if intake.date_in else fields.Date.today()
+            billing_end = self.date_to
+            
+            # Skip if billing period is invalid
+            if billing_start >= billing_end:
+                continue
+            
+            # Calculate amount for this billing period only
+            period_amount = self._calculate_period_amount(intake, billing_start, billing_end)
+            
+            print(f"  Intake {intake.name}: billing_start={billing_start}, billing_end={billing_end}, period_amount={period_amount}")
+            
+            if period_amount > 0:
+                partner = intake.partner_id
+                if partner not in partner_data:
+                    partner_data[partner] = {
+                        'intakes': [],
+                        'total_amount': 0,
+                    }
+                partner_data[partner]['intakes'].append(intake)
+                partner_data[partner]['total_amount'] += period_amount
         
         invoices_created = []
         total_amount = 0
@@ -246,100 +366,273 @@ class CsMonthlyBillingWizard(models.TransientModel):
             print(f"Reset last_billed_date for {reset_count} intakes with no active invoices.")
     
     def _create_partner_invoice(self, partner, intakes, total_amount):
-        """Create invoice for a partner"""
+        """Create invoice for a partner with intake-wise lines"""
         invoice_vals = {
             'partner_id': partner.id,
             'move_type': 'out_invoice',
-            'invoice_date': fields.Date.today(),
+            'invoice_date': self.invoice_date,
             'ref': f'Cold Storage charges from {self.date_from} to {self.date_to}',
             'company_id': self.company_id.id,
             'currency_id': self.currency_id.id,
             'invoice_line_ids': [],
         }
         
-        # Group by product for invoice lines
-        product_data = {}
-        for intake in intakes:
-            for line in intake.line_ids.filtered(lambda l: l.amount_subtotal > 0):
-                product = line.tariff_rule_id.price_product_id
-                if product not in product_data:
-                    product_data[product] = {
-                        'amount': 0,
-                        'description': f'Cold Storage charges for {intake.name}',
-                    }
-                product_data[product]['amount'] += line.amount_subtotal
+        # Get default income account (will be used for all lines)
+        default_account = self._get_income_account()
         
-        for product, data in product_data.items():
-            print(f"\n=== INVOICE CREATION DEBUG ===")
-            print(f"Product: {product.name}")
-            print(f"Product ID: {product.id}")
-            print(f"Amount: {data['amount']:,.2f}")
+        # Create one invoice line per intake with all details
+        for intake in intakes:
+            # Calculate billing period for this intake
+            billing_start = intake.last_billed_date or intake.date_in.date() if intake.date_in else fields.Date.today()
+            billing_end = self.date_to
             
-            # Get the income account for the product
-            account_id = product.property_account_income_id.id
-            print(f"Product Income Account: {account_id}")
+            # Calculate amount for this billing period
+            intake_total = self._calculate_period_amount(intake, billing_start, billing_end)
             
+            if intake_total <= 0:
+                continue
+            
+            intake_lines = intake.line_ids.filtered(lambda l: l.tariff_rule_id)
+            
+            # Build description with all details
+            items_list = []
+            for line in intake_lines:
+                item_desc = f"{line.product_id.name}"
+                if line.lot_id:
+                    item_desc += f" (Lot: {line.lot_id.name})"
+                if line.qty_in:
+                    item_desc += f" - Qty: {line.qty_in} {line.qty_uom_id.name if line.qty_uom_id else ''}"
+                if line.weight:
+                    item_desc += f", Weight: {line.weight} kg"
+                if line.volume:
+                    item_desc += f", Volume: {line.volume} m³"
+                items_list.append(item_desc)
+            
+            # Format date in
+            date_in_str = intake.date_in.strftime('%d-%m-%Y %H:%M') if intake.date_in else 'N/A'
+            
+            # Format billing period
+            if isinstance(billing_start, str):
+                billing_start = fields.Date.from_string(billing_start)
+            if isinstance(billing_end, str):
+                billing_end = fields.Date.from_string(billing_end)
+            
+            billing_period_str = f"{billing_start.strftime('%d-%m-%Y')} to {billing_end.strftime('%d-%m-%Y')}"
+            
+            # Calculate duration for this billing period
+            period_duration = (billing_end - billing_start).days
+            duration_str = f"{period_duration} day(s)"
+            
+            # Build comprehensive description
+            description = f"Intake: {intake.name}\n"
+            description += f"Date In: {date_in_str}\n"
+            description += f"Billing Period: {billing_period_str}\n"
+            description += f"Duration: {duration_str}\n"
+            description += f"Location: {intake.location_id.name if intake.location_id else 'N/A'}\n"
+            description += f"Items:\n"
+            for item in items_list:
+                description += f"  • {item}\n"
+            
+            # Get product from first line (or use a default product)
+            product = intake_lines[0].tariff_rule_id.price_product_id if intake_lines[0].tariff_rule_id and intake_lines[0].tariff_rule_id.price_product_id else self._get_default_product()
+            
+            # Get account for this product
+            account_id = product.property_account_income_id.id if product else default_account
             if not account_id:
-                # Fallback to product category income account
-                account_id = product.categ_id.property_account_income_categ_id.id
-                print(f"Category Income Account: {account_id}")
-            
+                account_id = product.categ_id.property_account_income_categ_id.id if product and product.categ_id else default_account
             if not account_id:
-                # Fallback to default income account
-                account_id = self.env['account.account'].search([
-                    ('account_type', '=', 'income'),
-                    ('company_id', '=', self.company_id.id)
-                ], limit=1).id
-                print(f"Default Income Account: {account_id}")
-            
-            if not account_id:
-                # Try to get account from company's chart template
-                # Look for common income account types
-                account = self.env['account.account'].search([
-                    ('company_id', '=', self.company_id.id),
-                    ('account_type', 'in', ['income', 'income_other', 'income_other_income'])
-                ], limit=1)
-                if account:
-                    account_id = account.id
-                    print(f"Found Income Account by type: {account_id}")
-                else:
-                    # Try to find any account with revenue/income in name
-                    account = self.env['account.account'].search([
-                        ('name', 'ilike', 'revenue'),
-                        ('company_id', '=', self.company_id.id)
-                    ], limit=1)
-                    if not account:
-                        account = self.env['account.account'].search([
-                            ('name', 'ilike', 'income'),
-                            ('company_id', '=', self.company_id.id)
-                        ], limit=1)
-                    if account:
-                        account_id = account.id
-                        print(f"Found Income Account by name: {account_id}")
-                    else:
-                        # Last resort: check if accounting is installed
-                        if not self.env['ir.module.module'].search([('name', '=', 'account'), ('state', '=', 'installed')]):
-                            raise UserError(_('Accounting module is not installed. Please install the Accounting app first.'))
-                        
-                        # If accounting is installed but no accounts exist, guide user
-                        print("ERROR: No accounts found in company!")
-                        raise UserError(_(
-                            'No income accounts found. Please:\n'
-                            '1. Go to Accounting > Configuration > Chart of Accounts\n'
-                            '2. Install a Chart of Accounts if not already installed\n'
-                            '3. Or configure the income account for the product: %s'
-                        ) % product.name)
-            
-            print(f"Final Account ID: {account_id}")
-            print(f"=== END INVOICE CREATION DEBUG ===\n")
+                account_id = default_account
             
             invoice_line_vals = {
-                'product_id': product.id,
-                'name': data['description'],
+                'product_id': product.id if product else False,
+                'name': description.strip(),
                 'quantity': 1,
-                'price_unit': data['amount'],
+                'price_unit': intake_total,
                 'account_id': account_id,
             }
             invoice_vals['invoice_line_ids'].append((0, 0, invoice_line_vals))
         
         return self.env['account.move'].create(invoice_vals)
+    
+    def _format_duration(self, intake_lines):
+        """Format duration string from intake lines"""
+        if not intake_lines:
+            return 'N/A'
+        
+        # Calculate duration from intake date to today (or last billed date)
+        intake = intake_lines[0].intake_id
+        if not intake.date_in:
+            return 'N/A'
+        
+        # Calculate duration from date_in to today
+        today = fields.Datetime.now()
+        date_in = intake.date_in
+        
+        # Calculate difference
+        delta = today - date_in
+        total_days = delta.total_seconds() / 86400  # Convert to days
+        
+        days = int(total_days)
+        hours = int((total_days - days) * 24)
+        minutes = int(((total_days - days) * 24 - hours) * 60)
+        
+        if days > 0:
+            if hours > 0:
+                return f"{days} day(s), {hours} hour(s)"
+            else:
+                return f"{days} day(s)"
+        elif hours > 0:
+            if minutes > 0:
+                return f"{hours} hour(s), {minutes} minute(s)"
+            else:
+                return f"{hours} hour(s)"
+        elif minutes > 0:
+            return f"{minutes} minute(s)"
+        else:
+            return f"{total_days:.2f} day(s)"
+    
+    def _get_income_account(self):
+        """Get default income account"""
+        # Try to get account from product
+        account = self.env['account.account'].search([
+            ('account_type', '=', 'income'),
+            ('company_id', '=', self.company_id.id)
+        ], limit=1)
+        
+        if not account:
+            account = self.env['account.account'].search([
+                ('company_id', '=', self.company_id.id),
+                ('account_type', 'in', ['income', 'income_other', 'income_other_income'])
+            ], limit=1)
+        
+        if not account:
+            account = self.env['account.account'].search([
+                ('name', 'ilike', 'revenue'),
+                ('company_id', '=', self.company_id.id)
+            ], limit=1)
+        
+        if not account:
+            account = self.env['account.account'].search([
+                ('name', 'ilike', 'income'),
+                ('company_id', '=', self.company_id.id)
+            ], limit=1)
+        
+        if not account:
+            if not self.env['ir.module.module'].search([('name', '=', 'account'), ('state', '=', 'installed')]):
+                raise UserError(_('Accounting module is not installed. Please install the Accounting app first.'))
+            raise UserError(_(
+                'No income accounts found. Please:\n'
+                '1. Go to Accounting > Configuration > Chart of Accounts\n'
+                '2. Install a Chart of Accounts if not already installed\n'
+            ))
+        
+        return account.id
+    
+    def _get_default_product(self):
+        """Get default product for invoice lines"""
+        # Try to find a cold storage service product
+        product = self.env['product.product'].search([
+            ('name', 'ilike', 'cold storage'),
+            ('type', '=', 'service')
+        ], limit=1)
+        
+        if not product:
+            # Get default product category
+            category = self.env['product.category'].search([], limit=1)
+            # Create a default service product if none exists
+            product = self.env['product.product'].create({
+                'name': 'Cold Storage Service',
+                'type': 'service',
+                'categ_id': category.id if category else False,
+            })
+        
+        return product
+    
+    def _calculate_period_amount(self, intake, date_from, date_to):
+        """Calculate billing amount for a specific period"""
+        total_amount = 0
+        
+        # Convert dates to datetime for calculation
+        from datetime import datetime, time as dt_time
+        if isinstance(date_from, str):
+            date_from = fields.Date.from_string(date_from)
+        if isinstance(date_to, str):
+            date_to = fields.Date.from_string(date_to)
+        
+        # Get intake start datetime
+        if not intake.date_in:
+            return 0
+        
+        intake_start = intake.date_in
+        
+        # Billing period starts from the later of: date_from or intake.date_in
+        # Billing period ends at date_to (end of day)
+        period_start_date = max(date_from, intake_start.date())
+        period_end_date = date_to
+        
+        # If period start is after period end, no billing
+        if period_start_date > period_end_date:
+            return 0
+        
+        # Convert to datetime for calculation
+        # If period starts on intake date, use actual intake time; otherwise use start of day
+        if period_start_date == intake_start.date():
+            period_start = intake_start
+        else:
+            period_start = datetime.combine(period_start_date, dt_time.min)
+        
+        period_end = datetime.combine(period_end_date, dt_time.max)
+        
+        # Calculate duration in days for this period
+        period_duration = (period_end - period_start).total_seconds() / 86400  # days
+        
+        if period_duration <= 0:
+            return 0
+        
+        print(f"\n=== PERIOD AMOUNT CALCULATION DEBUG ===")
+        print(f"Intake: {intake.name}")
+        print(f"Period Start: {period_start}")
+        print(f"Period End: {period_end}")
+        print(f"Period Duration (days): {period_duration}")
+        
+        # Calculate amount for each line based on billing period
+        for line in intake.line_ids:
+            if not line.tariff_rule_id:
+                print(f"  Line {line.id}: No tariff rule, skipping")
+                continue
+            
+            # Get billing basis and unit
+            basis = line.bill_basis or line.tariff_rule_id.basis
+            price_unit = line.price_unit or line.tariff_rule_id.price_unit
+            
+            # Calculate units based on basis (same logic as tariff rule)
+            if basis == 'day_weight':
+                # Use weight if available, otherwise use quantity as fallback
+                units = line.weight or line.qty_in or 0
+            elif basis == 'day_volume':
+                units = line.volume or 0
+            elif basis == 'day_pallet':
+                units = line.pallet_count or 0
+            elif basis == 'flat':
+                units = 1
+            else:
+                units = line.qty_in or 0
+            
+            print(f"  Line {line.id}: basis={basis}, units={units}, price_unit={price_unit}")
+            
+            # Apply minimum billable days from tariff rule
+            min_bill_days = line.tariff_rule_id.min_bill_days or 1.0
+            effective_duration = max(period_duration, min_bill_days)
+            
+            print(f"    period_duration={period_duration}, min_bill_days={min_bill_days}, effective_duration={effective_duration}")
+            
+            # Calculate amount for this period
+            line_amount = units * price_unit * effective_duration
+            print(f"    line_amount = {units} × {price_unit} × {effective_duration} = {line_amount}")
+            total_amount += line_amount
+        
+        print(f"Total Period Amount: {total_amount}")
+        print(f"=== END PERIOD AMOUNT CALCULATION DEBUG ===\n")
+        
+        return total_amount
+    

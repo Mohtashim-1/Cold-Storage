@@ -56,6 +56,7 @@
                                 <field name="company_id" groups="base.group_multi_company"/>
                                 <field name="date_from"/>
                                 <field name="date_to"/>
+                                <field name="invoice_date"/>
                             </group>
                             <group>
                                 <field name="partner_ids" widget="many2many_tags" options="{'no_create': True}"/>
@@ -66,8 +67,28 @@
                             <field name="bill_unbilled_only"/>
                             <field name="reset_billing_date"/>
                             <field name="create_invoices"/>
+                            <button name="action_load_intakes" string="Load Intakes" type="object" class="btn-secondary"/>
                         </group>
-                        <group invisible="not create_invoices">
+                        <notebook>
+                            <page string="Intakes" name="intakes">
+                                <field name="intake_line_ids">
+                                    <tree editable="bottom" decoration-success="select==True" decoration-muted="select==False">
+                                        <field name="select" widget="boolean_toggle"/>
+                                        <field name="intake_id" readonly="1"/>
+                                        <field name="partner_id" readonly="1"/>
+                                        <field name="date_in" readonly="1"/>
+                                        <field name="location_id" readonly="1"/>
+                                        <field name="total_days" readonly="1" widget="float"/>
+                                        <field name="billed_days" readonly="1" widget="float"/>
+                                        <field name="pending_days" readonly="1" widget="float"/>
+                                        <field name="period_amount" readonly="1" widget="monetary"/>
+                                        <field name="total_amount" readonly="1" widget="monetary"/>
+                                        <field name="currency_id" invisible="1"/>
+                                    </tree>
+                                </field>
+                            </page>
+                        </notebook>
+                        <group>
                             <group>
                                 <field name="invoice_count" readonly="1"/>
                                 <field name="total_amount" widget="monetary" readonly="1"/>
@@ -79,7 +100,8 @@
                     </sheet>
                     <footer>
                         <button name="action_preview_billing" type="object" string="Preview" class="btn-secondary"/>
-                        <button name="action_run_billing" type="object" string="Run Billing" class="oe_highlight"/>
+                        <button name="action_run_billing" type="object" string="Create Invoices" class="oe_highlight" invisible="not create_invoices"/>
+                        <button name="action_run_billing" type="object" string="Preview" class="oe_highlight" invisible="create_invoices"/>
                         <button string="Cancel" class="btn-secondary" special="cancel"/>
                     </footer>
                 </form>
